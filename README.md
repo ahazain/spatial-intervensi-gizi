@@ -1,4 +1,4 @@
-# 📋 Frontend Project Structure
+# 📋 Project Structure
 
 ```bash
 📦 Frontend-Project/
