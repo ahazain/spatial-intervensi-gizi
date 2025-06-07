@@ -24,9 +24,9 @@
 │   │
 │   └── 📝 types/               # Type definitions untuk TypeScript
 │   │   └── 📋 index.ts         # Definisi tipe data aplikasi
-│   ├── 🚀 App.tsx                  # Komponen utama aplikasi
-│   ├── 🎨 index.css                # Styling global aplikasi
-│   └── ⚡ main.tsx                 # Entry point aplikasi (Vite/React)
+│   ├── 🚀 App.tsx              # Komponen utama aplikasi
+│   ├── 🎨 index.css            # Styling global aplikasi
+│   └── ⚡ main.tsx             # Entry point aplikasi (Vite/React)
 │
 │
 ├── 📄 .gitignore               # File & folder yang tidak di-push ke Git
