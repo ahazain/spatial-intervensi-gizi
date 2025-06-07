@@ -36,7 +36,7 @@
 └── ⚙️ vite.config.ts           # Konfigurasi Vite bundler
 ```
 
-## 🛠️ Tech Stack Analysis
+## 🛠️ Tech Stack 
 
 ### 🏗️ Core Framework & Build Tools
 - **React 18.3.1** - Frontend framework utama
@@ -74,7 +74,7 @@
 - **TypeScript ESLint** - TypeScript-specific linting
 - **Various ESLint plugins** - React hooks, refresh, etc.
 
-## 📊 Fitur Utama
+## 📊 Fitur 
 1. **Autentikasi** - Login/logout system
 2. **Dashboard** - Ringkasan data dan analytics
 3. **Manajemen Anak** - CRUD data anak
