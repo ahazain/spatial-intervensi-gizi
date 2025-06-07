@@ -1,5 +1,6 @@
 # 📋 Frontend Project Structure
 
+```bash
 📦 Frontend-Project/
 ├── 📁 node_modules/            # Folder dependensi npm (auto-generated)
 │
@@ -33,6 +34,7 @@
 ├── 🔧 package.json             # Info project & daftar dependensi
 ├── 📜 tsconfig.json            # Konfigurasi TypeScript
 └── ⚙️ vite.config.ts           # Konfigurasi Vite bundler
+```
 
 ## 🛠️ Tech Stack Analysis
 
