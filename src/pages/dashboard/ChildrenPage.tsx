@@ -1,83 +1,81 @@
-import React, { useState } from 'react';
-import { useChildrenStore } from '../../stores/childrenStore';
-import { useAuthStore, usePermissions } from '../../stores/authStore';
-import { DataTable } from '../../components/ui/DataTable';
-import { Button, ButtonLink } from '../../components/ui/Button';
-import PageHeader from '../../components/ui/PageHeader';
-import StatusBadge from '../../components/ui/StatusBadge';
-import { Child } from '../../types';
-import { Plus, Edit2, Trash2, Search } from 'lucide-react';
+import React, { useState } from "react";
+import { useChildrenStore } from "../../stores/childrenStore";
+import { DataTable } from "../../components/ui/DataTable";
+import { Button, ButtonLink } from "../../components/ui/Button";
+import PageHeader from "../../components/ui/PageHeader";
+import StatusBadge from "../../components/ui/StatusBadge";
+import { Child } from "../../types";
+import { Plus, Edit2, Trash2, Search } from "lucide-react";
 
 const ChildrenPage: React.FC = () => {
   const { children, deleteChild } = useChildrenStore();
-  const { user } = useAuthStore();
-  const permissions = usePermissions();
-  const [searchTerm, setSearchTerm] = useState('');
-  
-  // Filter children based on officer's district
-  const filteredByDistrict = user?.role === 'officer' && user.district 
-    ? children.filter(child => child.district === user.district)
-    : children;
-  
+
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Filter children based on officer's district (removed role and district checks)
+  const filteredByDistrict = children;
+
   // Filter by search term (name or district)
-  const filteredChildren = filteredByDistrict.filter(child => 
-    child.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    child.district.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredChildren = filteredByDistrict.filter(
+    (child) =>
+      child.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      child.district.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('Apakah Anda yakin ingin menghapus data balita ini?')) {
+    if (window.confirm("Apakah Anda yakin ingin menghapus data balita ini?")) {
       await deleteChild(id);
     }
   };
 
   const columns = [
     {
-      header: 'ID',
-      accessor: (child: Child) => child.id.split('-')[1],
-      className: 'w-16'
+      header: "ID",
+      accessor: (child: Child) => child.id.split("-")[1],
+      className: "w-16",
     },
     {
-      header: 'Nama',
-      accessor: 'name',
+      header: "Nama",
+      accessor: (child: Child) => child.name,
     },
     {
-      header: 'Usia (bulan)',
-      accessor: 'age',
-      className: 'w-32'
+      header: "Usia (bulan)",
+      accessor: (child: Child) => child.age,
+      className: "w-32",
     },
     {
-      header: 'Status Gizi',
-      accessor: (child: Child) => <StatusBadge status={child.nutritionStatus} />,
+      header: "Status Gizi",
+      accessor: (child: Child) => (
+        <StatusBadge status={child.nutritionStatus} />
+      ),
     },
     {
-      header: 'Kecamatan',
-      accessor: 'district',
+      header: "Kecamatan",
+      accessor: (child: Child) => child.district,
     },
     {
-      header: 'Diperbarui',
-      accessor: (child: Child) => new Date(child.updatedAt).toLocaleDateString('id-ID'),
+      header: "Diperbarui",
+      accessor: (child: Child) =>
+        new Date(child.updatedAt).toLocaleDateString("id-ID"),
     },
   ];
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <PageHeader 
-        title="Data Balita" 
-        description={`Manajemen data balita ${user?.district ? `di kecamatan ${user.district}` : ''}`}
+      <PageHeader
+        title="Data Balita"
+        description="Manajemen data balita"
         actions={
-          permissions.canAddChild ? (
-            <ButtonLink
-              to="/dashboard/children/add"
-              variant="primary"
-              leftIcon={<Plus size={16} />}
-            >
-              Tambah Balita
-            </ButtonLink>
-          ) : undefined
+          <ButtonLink
+            to="/dashboard/children/add"
+            variant="primary"
+            leftIcon={<Plus size={16} />}
+          >
+            Tambah Balita
+          </ButtonLink>
         }
       />
-      
+
       <div className="mt-6 bg-white rounded-lg shadow overflow-hidden">
         <div className="p-4 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-3 sm:space-y-0">
           <div className="w-full sm:w-80">
@@ -98,42 +96,38 @@ const ChildrenPage: React.FC = () => {
               />
             </div>
           </div>
-          
+
           <div className="text-sm text-gray-500">
             Total: {filteredChildren.length} balita
           </div>
         </div>
-        
+
         <DataTable<Child>
           columns={columns}
           data={filteredChildren}
           keyField="id"
-          actions={permissions.canEditChild || permissions.canDeleteChild ? (child) => (
+          actions={(child) => (
             <div className="flex justify-end space-x-2">
-              {permissions.canEditChild && (
-                <ButtonLink
-                  to={`/dashboard/children/edit/${child.id}`}
-                  variant="ghost"
-                  size="sm"
-                  leftIcon={<Edit2 size={16} />}
-                >
-                  Edit
-                </ButtonLink>
-              )}
-              
-              {permissions.canDeleteChild && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  leftIcon={<Trash2 size={16} className="text-red-500" />}
-                  className="text-red-500 hover:bg-red-50"
-                  onClick={() => handleDelete(child.id)}
-                >
-                  Hapus
-                </Button>
-              )}
+              <ButtonLink
+                to={`/dashboard/children/edit/${child.id}`}
+                variant="ghost"
+                size="sm"
+                leftIcon={<Edit2 size={16} />}
+              >
+                Edit
+              </ButtonLink>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                leftIcon={<Trash2 size={16} className="text-red-500" />}
+                className="text-red-500 hover:bg-red-50"
+                onClick={() => handleDelete(child.id)}
+              >
+                Hapus
+              </Button>
             </div>
-          ) : undefined}
+          )}
         />
       </div>
     </div>

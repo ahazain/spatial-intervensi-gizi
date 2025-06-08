@@ -1,16 +1,16 @@
-// User types
-export type UserRole = 'admin' | 'officer' | 'guest';
-
 export interface User {
-  id: string;
-  name: string;
+  id_user: string;
+  username: string;
+  password_hash: string;
   email: string;
-  role: UserRole;
-  district?: string; // For officers assigned to specific districts
 }
 
 // Nutrition status types
-export type NutritionStatus = 'normal' | 'underweight' | 'severely_underweight' | 'stunting';
+export type NutritionStatus =
+  | "normal"
+  | "underweight"
+  | "severely_underweight"
+  | "stunting";
 
 // Children data
 export interface Child {
@@ -28,7 +28,7 @@ export interface Child {
 export interface HealthFacility {
   id: string;
   name: string;
-  type: 'puskesmas' | 'pustu'; // Health center or sub-health center
+  type: "puskesmas" | "pustu"; // Health center or sub-health center
   district: string;
   coordinates: [number, number]; // [latitude, longitude]
   capacity: number;

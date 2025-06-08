@@ -1,6 +1,4 @@
-// src/pages/TestSupabase.tsx
-
-import { supabase } from "../lib/Supabase";
+import supabase from "./../helper/SupabaseClient";
 import { useEffect } from "react";
 
 export default function TestSupabase() {
