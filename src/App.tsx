@@ -3,7 +3,7 @@ import {
   BrowserRouter as Router,
   Routes,
   Route,
-  Navigate,
+  // Navigate,
 } from "react-router-dom";
 import { useAuthStore } from "./stores/authStore";
 import { useChildrenStore } from "./stores/childrenStore";
@@ -13,11 +13,8 @@ import { useFacilitiesStore } from "./stores/facilitiesStore";
 import DashboardLayout from "./components/layouts/DashboardLayout";
 import PublicLayout from "./components/layouts/PublicLayout";
 
-import Test from "./pages/testSupabase";
-
 // Public Pages
 import HomePage from "./pages/public/HomePage";
-import LoginPage from "./pages/public/LoginPage";
 import PublicMapPage from "./pages/public/PublicMapPage";
 import PublicStatsPage from "./pages/public/PublicStatsPage";
 
@@ -26,50 +23,45 @@ import DashboardPage from "./pages/dashboard/DashboardPage";
 import ChildrenPage from "./pages/dashboard/ChildrenPage";
 import ChildFormPage from "./pages/dashboard/ChildFormPage";
 import FacilitiesPage from "./pages/dashboard/FacilitiesPage";
-import FacilityFormPage from "./pages/dashboard/FacilityFormPage";
 import MapAnalysisPage from "./pages/dashboard/MapAnalysisPage";
 import StatisticsPage from "./pages/dashboard/StatisticsPage";
+import FacilityFormPage from "./pages/dashboard/FacilityFormPage";
+
+//auth
+import Test from "./pages/testSupabase";
+import LoginPage from "./pages/auth/LoginPage";
+import RegisterPage from "./pages/auth/RegisterPage";
 
 // Protected route component
-const ProtectedRoute: React.FC<{
-  children: React.ReactNode;
-  allowedRoles?: Array<"admin" | "officer" | "guest">;
-}> = ({ children, allowedRoles }) => {
-  const { isAuthenticated, role } = useAuthStore();
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (allowedRoles && role && !allowedRoles.includes(role)) {
-    return <Navigate to="/dashboard" replace />;
-  }
-
-  return <>{children}</>;
-};
+import ProtectedRoute from "../src/helper/ProtectedRoute";
 
 function App() {
+  const { checkAuth } = useAuthStore();
   const { fetchChildren } = useChildrenStore();
   const { fetchFacilities } = useFacilitiesStore();
-
   useEffect(() => {
+    // Check authentication status on app startup
+    checkAuth();
+
     // Load initial data
     fetchChildren();
     fetchFacilities();
-  }, [fetchChildren, fetchFacilities]);
+  }, [checkAuth, fetchChildren, fetchFacilities]);
 
   return (
     <Router>
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<PublicLayout />}>
-          <Route path="/test-supabase" element={<Test />} />
+          <Route path="test-supabase" element={<Test />} />
           <Route index element={<HomePage />} />
-          <Route path="login" element={<LoginPage />} />
           <Route path="map" element={<PublicMapPage />} />
           <Route path="statistics" element={<PublicStatsPage />} />
         </Route>
 
+        {/* auth routes */}
+        <Route path="/admincore/login" element={<LoginPage />} />
+        <Route path="/admincore/register" element={<RegisterPage />} />
         {/* Protected Routes */}
         <Route
           path="/dashboard"
@@ -101,7 +93,7 @@ function App() {
           <Route
             path="facilities/add"
             element={
-              <ProtectedRoute allowedRoles={["admin"]}>
+              <ProtectedRoute>
                 <FacilityFormPage />
               </ProtectedRoute>
             }
@@ -109,7 +101,7 @@ function App() {
           <Route
             path="facilities/edit/:id"
             element={
-              <ProtectedRoute allowedRoles={["admin"]}>
+              <ProtectedRoute>
                 <FacilityFormPage />
               </ProtectedRoute>
             }
@@ -117,9 +109,6 @@ function App() {
           <Route path="map-analysis" element={<MapAnalysisPage />} />
           <Route path="statistics" element={<StatisticsPage />} />
         </Route>
-
-        {/* Catch all - redirect to home */}
-        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );

@@ -6,7 +6,6 @@ import { Button } from '../../components/ui/Button';
 import PageHeader from '../../components/ui/PageHeader';
 import { districts } from '../../lib/mockData';
 import { Save, MapPin } from 'lucide-react';
-import { HealthFacility } from '../../types';
 import BaseMap from '../../components/map/BaseMap';
 
 const FacilityFormPage: React.FC = () => {
@@ -112,6 +111,7 @@ const FacilityFormPage: React.FC = () => {
         navigate('/dashboard/facilities');
       }, 1500);
     } catch (error) {
+      console.log('Error:', error);
       setMessage({
         type: 'error',
         text: 'Terjadi kesalahan saat menyimpan data'
