@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { Kecamatan } from "../types";
-import { kecamatanList as mockKecamatanList } from "../lib/mockData";
+import { getAllKecamatan } from "../services/kecamatanService";
 
 interface KecamatanStore {
   kecamatanList: Kecamatan[];
@@ -8,11 +8,10 @@ interface KecamatanStore {
   addKecamatan: (kecamatan: Kecamatan) => void;
   updateKecamatan: (id: string, updatedKecamatan: Partial<Kecamatan>) => void;
   deleteKecamatan: (id: string) => void;
-  getKecamatanById: (id: string) => Kecamatan | undefined;
-  initializeMockData: () => void;
+  initializeFromSupabase: () => void;
 }
 
-export const useKecamatanStore = create<KecamatanStore>((set, get) => ({
+export const useKecamatanStore = create<KecamatanStore>((set) => ({
   kecamatanList: [],
 
   setKecamatanList: (kecamatanList: Kecamatan[]) => set({ kecamatanList }),
@@ -36,8 +35,16 @@ export const useKecamatanStore = create<KecamatanStore>((set, get) => ({
       ),
     })),
 
-  getKecamatanById: (id: string) =>
-    get().kecamatanList.find((kecamatan) => kecamatan.id === id),
-
-  initializeMockData: () => set({ kecamatanList: mockKecamatanList }),
+  initializeFromSupabase: async () => {
+    console.log(" Mulai inisialisasi dari Supabase...");
+    try {
+      const data = await getAllKecamatan();
+      console.log(" Data berhasil diambil dari Supabase:", data);
+      console.log("Jumlah data:", data?.length);
+      set({ kecamatanList: data });
+      console.log("Store berhasil diupdate");
+    } catch (err) {
+      console.error(" Gagal inisialisasi dari Supabase:", err);
+    }
+  },
 }));

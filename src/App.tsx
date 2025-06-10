@@ -9,6 +9,7 @@ import {
 // Import store
 import { useChildrenStore } from "../src/stores/childrenStore"; // Sesuaikan path
 import { useFacilitiesStore } from "./stores/facilitiesStore";
+import { useKecamatanStore } from "./stores/kecamatanStore";
 
 // Layouts
 import DashboardLayout from "./components/layouts/DashboardLayout";
@@ -42,11 +43,19 @@ function App() {
   const { initializeFromSupabase: initializeFacilitiesFromSupabase } =
     useFacilitiesStore();
 
+  const { initializeFromSupabase: initializeKecamatanFromSupabase } =
+    useKecamatanStore();
+
   useEffect(() => {
     // Inisialisasi data dari Supabase saat aplikasi dimuat
     initializeFromSupabase();
     initializeFacilitiesFromSupabase();
-  }, [initializeFromSupabase, initializeFacilitiesFromSupabase]);
+    initializeKecamatanFromSupabase();
+  }, [
+    initializeFromSupabase,
+    initializeFacilitiesFromSupabase,
+    initializeKecamatanFromSupabase,
+  ]);
 
   return (
     <Router>

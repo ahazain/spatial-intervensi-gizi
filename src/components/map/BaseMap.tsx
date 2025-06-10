@@ -4,7 +4,7 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import KecamatanPolygon from "./KecamatanPolygon";
 import FacilityMarker from "./FacilityMarker";
-import { kecamatanList } from "../../lib/mockData";
+import { useKecamatanStore } from "../../stores/kecamatanStore";
 import { useFacilitiesStore } from "../../stores/facilitiesStore";
 
 import icon from "leaflet/dist/images/marker-icon.png";
@@ -63,6 +63,7 @@ const BaseMap: React.FC<BaseMapProps> = ({
 }) => {
   const [mapReady, setMapReady] = useState(false);
   const facilities = useFacilitiesStore((state) => state.facilities);
+  const kecamatanList = useKecamatanStore((state) => state.kecamatanList);
 
   return (
     <div className={className} style={style}>

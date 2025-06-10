@@ -16,11 +16,49 @@ const KecamatanPolygon: React.FC<KecamatanPolygonProps> = ({
   kecamatan,
   onClick,
 }) => {
-  // Pastikan data area tersedia
-  if (!kecamatan.area || !kecamatan.area.coordinates) {
+  // Enhanced debugging
+  console.log("=== DEBUG KECAMATAN ===");
+  console.log("Kecamatan:", kecamatan.nama);
+  console.log("Full kecamatan object:", kecamatan);
+  console.log("Area exists:", !!kecamatan.area);
+  console.log("Area object:", kecamatan.area);
+  console.log("Area type:", kecamatan.area?.type);
+  console.log("Coordinates exists:", !!kecamatan.area?.coordinates);
+  console.log("Coordinates length:", kecamatan.area?.coordinates?.length);
+  console.log("Coordinates:", kecamatan.area?.coordinates);
+  console.log("========================");
+
+  // Pastikan data area tersedia dengan debugging yang lebih detail
+  if (!kecamatan.area) {
+    console.warn(`❌ Kecamatan ${kecamatan.nama}: area field is missing`);
+    return null;
+  }
+
+  if (!kecamatan.area.coordinates) {
     console.warn(
-      `Kecamatan ${kecamatan.nama} tidak memiliki data area yang valid`
+      `❌ Kecamatan ${kecamatan.nama}: coordinates field is missing`
     );
+    console.log("Available area properties:", Object.keys(kecamatan.area));
+    return null;
+  }
+
+  if (!Array.isArray(kecamatan.area.coordinates)) {
+    console.warn(`❌ Kecamatan ${kecamatan.nama}: coordinates is not an array`);
+    console.log("Coordinates type:", typeof kecamatan.area.coordinates);
+    console.log("Coordinates value:", kecamatan.area.coordinates);
+    return null;
+  }
+
+  if (kecamatan.area.coordinates.length === 0) {
+    console.warn(`❌ Kecamatan ${kecamatan.nama}: coordinates array is empty`);
+    return null;
+  }
+
+  if (!Array.isArray(kecamatan.area.coordinates[0])) {
+    console.warn(
+      `❌ Kecamatan ${kecamatan.nama}: first coordinate ring is not an array`
+    );
+    console.log("First element:", kecamatan.area.coordinates[0]);
     return null;
   }
 
@@ -60,17 +98,34 @@ const KecamatanPolygon: React.FC<KecamatanPolygonProps> = ({
     }
   };
 
-  // Konversi koordinat dari GeoJSON format [lng, lat] ke Leaflet format [lat, lng]
+  // Enhanced coordinate conversion with better error handling
   const convertCoordinates = () => {
     try {
-      return kecamatan.area.coordinates[0].map(
-        (coord) => [coord[1], coord[0]] as [number, number]
+      const coords = kecamatan.area.coordinates[0];
+      console.log(`Converting coordinates for ${kecamatan.nama}:`, {
+        originalLength: coords.length,
+        firstCoord: coords[0],
+        lastCoord: coords[coords.length - 1],
+      });
+
+      const converted = coords.map((coord, index) => {
+        if (!Array.isArray(coord) || coord.length < 2) {
+          console.error(`Invalid coordinate at index ${index}:`, coord);
+          return [0, 0] as [number, number];
+        }
+        return [coord[1], coord[0]] as [number, number];
+      });
+
+      console.log(
+        `✅ Successfully converted ${converted.length} coordinates for ${kecamatan.nama}`
       );
+      return converted;
     } catch (error) {
       console.error(
-        `Error converting coordinates for ${kecamatan.nama}:`,
+        `❌ Error converting coordinates for ${kecamatan.nama}:`,
         error
       );
+      console.log("Coordinates structure:", kecamatan.area.coordinates);
       return [];
     }
   };
@@ -79,8 +134,13 @@ const KecamatanPolygon: React.FC<KecamatanPolygonProps> = ({
 
   // Jika tidak ada posisi yang valid, jangan render polygon
   if (positions.length === 0) {
+    console.warn(`❌ No valid positions for ${kecamatan.nama}`);
     return null;
   }
+
+  console.log(
+    `✅ Rendering polygon for ${kecamatan.nama} with ${positions.length} points`
+  );
 
   // Filter fasilitas kesehatan berdasarkan kecamatan
   const fasilitasKecamatan = fasilitasKesehatanList.filter(
