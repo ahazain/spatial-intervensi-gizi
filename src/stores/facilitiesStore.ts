@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { FasilitasKesehatan } from "../types";
-import { fasilitasKesehatanList as mockFacilities } from "../lib/mockData";
+import { getAllFasilitas } from "../services/fasilitesService";
 
 interface FacilitiesStore {
   facilities: FasilitasKesehatan[];
@@ -12,7 +12,7 @@ interface FacilitiesStore {
   ) => void;
   deleteFacility: (id: string) => void;
   getFacilityById: (id: string) => FasilitasKesehatan | undefined;
-  initializeMockData: () => void;
+  initializeFromSupabase: () => void;
 }
 
 export const useFacilitiesStore = create<FacilitiesStore>((set, get) => ({
@@ -40,5 +40,16 @@ export const useFacilitiesStore = create<FacilitiesStore>((set, get) => ({
   getFacilityById: (id: string) =>
     get().facilities.find((facility) => facility.id === id),
 
-  initializeMockData: () => set({ facilities: mockFacilities }),
+  initializeFromSupabase: async () => {
+    console.log("🔄 Mulai inisialisasi dari Supabase...");
+    try {
+      const data = await getAllFasilitas();
+      console.log("✅ Data berhasil diambil dari Supabase:", data);
+      console.log("📊 Jumlah data:", data?.length);
+      set({ facilities: data });
+      console.log("✅ Store berhasil diupdate");
+    } catch (err) {
+      console.error("❌ Gagal inisialisasi dari Supabase:", err);
+    }
+  },
 }));
