@@ -54,3 +54,20 @@ export interface MapFilters {
   showPustu: boolean;
   showPenyakitMenular: boolean;
 }
+
+//struktur data untuk view
+export interface PopUpFailitasKesehatan {
+  fasilitas_id: string;
+  fasilitas_nama: string;
+  type: string;
+  capacity: number;
+  total_balita: number;
+  jumlah_normal: number;
+  jumlah_kurang: number;
+  jumlah_buruk: number;
+  jumlah_stunting: number;
+  lokasi: {
+    type: "Point";
+    coordinates: [number, number];
+  };
+}

@@ -1,13 +1,7 @@
 import supabase from "../helper/SupabaseClient";
-import { FasilitasKesehatan } from "../types";
-export const getAllFasilitas = async (): Promise<FasilitasKesehatan[]> => {
-  console.log("🔄 Mengambil data balita dari Supabase...");
-
-  const { data, error } = await supabase
-    .from("fasilitas_kesehatan")
-    .select("*");
-
-  console.log("📡 Response dari Supabase:", { data, error });
+import { PopUpFailitasKesehatan } from "../types";
+export const getAllFasilitasBalita = async (): Promise<PopUpFailitasKesehatan[]> => {
+  const { data, error } = await supabase.rpc("get_fasilitas_balita");
 
   if (error) {
     console.error("Error fetching balita:", error.message);
@@ -15,5 +9,5 @@ export const getAllFasilitas = async (): Promise<FasilitasKesehatan[]> => {
   }
 
   console.log("Data balita berhasil diambil:", data);
-  return data as FasilitasKesehatan[];
+  return data as PopUpFailitasKesehatan[];
 };

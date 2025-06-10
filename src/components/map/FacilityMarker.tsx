@@ -1,12 +1,11 @@
 import React from "react";
 import { Marker, Popup } from "react-leaflet";
 import L from "leaflet";
-import { FasilitasKesehatan } from "../../types";
-import { useChildrenStore } from "../../stores/childrenStore";
+import { PopUpFailitasKesehatan } from "../../types";
 
 // Create custom icon
-const createFacilityIcon = (type: "puskesmas" | "pustu") => {
-  const color = type === "puskesmas" ? "#0369a1" : "#0891b2"; // Blue / Teal
+const createFacilityIcon = (type: string) => {
+  const color = type === "puskesmas" ? "#0369a1" : "#0891b2"; 
   const size = type === "puskesmas" ? 16 : 14;
 
   return L.divIcon({
@@ -26,67 +25,63 @@ const createFacilityIcon = (type: "puskesmas" | "pustu") => {
   });
 };
 
+// Interface sudah include koordinat dari query yang diperbaiki
 interface FacilityMarkerProps {
-  facility: FasilitasKesehatan;
-  onClick?: (facility: FasilitasKesehatan) => void;
+  facility: PopUpFailitasKesehatan;
+  onClick?: (facility: PopUpFailitasKesehatan) => void;
 }
 
 const FacilityMarker: React.FC<FacilityMarkerProps> = ({
   facility,
   onClick,
 }) => {
-  // Get children data from Supabase store
-  const { children } = useChildrenStore();
+  // Validasi koordinat dari facility.lokasi (format GeoJSON)
+  if (
+    !facility.lokasi?.coordinates ||
+    !Array.isArray(facility.lokasi.coordinates) ||
+    facility.lokasi.coordinates.length < 2
+  ) {
+    console.warn(
+      `Missing coordinates for facility: ${facility.fasilitas_nama}`,
+      facility.lokasi
+    );
+    return null;
+  }
+
+  // GeoJSON format: [longitude, latitude] -> convert to [latitude, longitude] untuk Leaflet
+  const [lng, lat] = facility.lokasi.coordinates;
+
+  if (
+    typeof lat !== "number" ||
+    typeof lng !== "number" ||
+    isNaN(lat) ||
+    isNaN(lng)
+  ) {
+    console.error(
+      "Invalid coordinates for facility:",
+      facility.fasilitas_nama,
+      { lat, lng }
+    );
+    return null;
+  }
+
+  const coordinates: [number, number] = [lat, lng]; // [latitude, longitude] untuk Leaflet
 
   const handleClick = () => {
     if (onClick) onClick(facility);
   };
 
-  // ✅ PERBAIKAN: Gunakan field name yang benar dari database
-  // Filter children by facility ID - gunakan fasilitas_kesehatan_id (dengan underscore)
-  const facilityChildren = children.filter((child) => {
-    // ✅ Debug: Log data untuk memastikan field name
-    console.log("🔍 Comparing:", {
-      childFacilityId: child.fasilitas_kesehatan_id, // ✅ Gunakan underscore
-      facilityId: facility.id,
-      isMatch: child.fasilitas_kesehatan_id === facility.id,
-    });
-
-    return child.fasilitas_kesehatan_id === facility.id; // ✅ Perbaikan field name
-  });
-
-  console.log(
-    `📊 Final count for ${facility.nama}: ${facilityChildren.length} children`
-  );
-
-  // Calculate nutrition statistics
-  const nutritionStats = facilityChildren.reduce(
-    (acc, child) => {
-      // ✅ PERBAIKAN: Gunakan field name yang benar
-      const status = child.status_nutrisi; // ✅ Gunakan underscore, bukan camelCase
-      acc[status] = (acc[status] || 0) + 1;
-      acc.total = (acc.total || 0) + 1;
-      return acc;
-    },
-    {
-      normal: 0,
-      kurang: 0,
-      buruk: 0,
-      stunting: 0,
-      total: 0,
-    }
-  );
-
-  const position: [number, number] = [
-    facility.lokasi.coordinates[1],
-    facility.lokasi.coordinates[0],
-  ];
-
   const icon = createFacilityIcon(facility.type);
+
+  // Calculate percentage for better display
+  const getPercentage = (value: number, total: number) => {
+    if (total === 0) return 0;
+    return ((value / total) * 100).toFixed(1);
+  };
 
   return (
     <Marker
-      position={position}
+      position={coordinates}
       icon={icon}
       eventHandlers={{ click: handleClick }}
       riseOnHover={true}
@@ -94,9 +89,10 @@ const FacilityMarker: React.FC<FacilityMarkerProps> = ({
     >
       <Popup maxWidth={300} className="facility-popup">
         <div className="p-3">
+          {/* Header Fasilitas */}
           <div className="mb-3 pb-2 border-b border-gray-200">
             <h3 className="text-base font-bold text-gray-900 mb-1">
-              {facility.nama}
+              {facility.fasilitas_nama}
             </h3>
             <div className="flex items-center">
               <span
@@ -112,10 +108,6 @@ const FacilityMarker: React.FC<FacilityMarkerProps> = ({
                 Kapasitas: {facility.capacity}
               </span>
             </div>
-            {/* Debug info - hapus setelah masalah terpecahkan */}
-            <div className="text-xs text-gray-400 mt-1">
-              Debug: Facility ID = {facility.id}
-            </div>
           </div>
 
           {/* Statistik Balita */}
@@ -125,83 +117,142 @@ const FacilityMarker: React.FC<FacilityMarkerProps> = ({
                 Data Balita Terdaftar
               </h4>
               <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
-                {nutritionStats.total} balita
+                {facility.total_balita} balita
               </span>
             </div>
 
-            {nutritionStats.total > 0 ? (
-              <div className="space-y-1">
-                {[
-                  {
-                    label: "Normal",
-                    value: nutritionStats.normal,
-                    color: "green",
-                  },
-                  {
-                    label: "Kurang",
-                    value: nutritionStats.kurang,
-                    color: "yellow",
-                  },
-                  { label: "Buruk", value: nutritionStats.buruk, color: "red" },
-                  {
-                    label: "Stunting",
-                    value: nutritionStats.stunting,
-                    color: "orange",
-                  },
-                ].map((item) => (
+            {facility.total_balita > 0 ? (
+              <div className="space-y-2">
+                {/* Progress Bar Total */}
+                <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
                   <div
-                    key={item.label}
-                    className="flex items-center justify-between text-xs"
-                  >
-                    <div className="flex items-center">
+                    className="bg-blue-500 h-2 rounded-full"
+                    style={{
+                      width: `${Math.min(
+                        (facility.total_balita / facility.capacity) * 100,
+                        100
+                      )}%`,
+                    }}
+                  />
+                </div>
+
+                {/* Detail Status Nutrisi */}
+                <div className="space-y-1">
+                  {[
+                    {
+                      label: "Normal",
+                      value: facility.jumlah_normal,
+                      color: "green",
+                    },
+                    {
+                      label: "Kurang",
+                      value: facility.jumlah_kurang,
+                      color: "yellow",
+                    },
+                    {
+                      label: "Buruk",
+                      value: facility.jumlah_buruk,
+                      color: "red",
+                    },
+                    {
+                      label: "Stunting",
+                      value: facility.jumlah_stunting,
+                      color: "orange",
+                    },
+                  ]
+                    .filter((item) => item.value > 0) // Hanya tampilkan yang ada datanya
+                    .map((item) => (
                       <div
-                        className={`w-2 h-2 rounded-full bg-${item.color}-500 mr-2`}
-                      />
-                      <span>{item.label}</span>
-                    </div>
-                    <span className={`font-semibold text-${item.color}-700`}>
-                      {item.value}
+                        key={item.label}
+                        className="flex items-center justify-between text-xs"
+                      >
+                        <div className="flex items-center">
+                          <div
+                            className={`w-2 h-2 rounded-full bg-${item.color}-500 mr-2`}
+                          />
+                          <span>{item.label}</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <span
+                            className={`font-semibold text-${item.color}-700`}
+                          >
+                            {item.value}
+                          </span>
+                          <span className="text-gray-500">
+                            ({getPercentage(item.value, facility.total_balita)}
+                            %)
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+
+                {/* Summary Status */}
+                <div className="mt-2 pt-2 border-t border-gray-100">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-600">Kapasitas:</span>
+                    <span
+                      className={`font-medium ${
+                        facility.total_balita > facility.capacity
+                          ? "text-red-600"
+                          : "text-green-600"
+                      }`}
+                    >
+                      {facility.total_balita}/{facility.capacity}
+                      {facility.total_balita > facility.capacity &&
+                        " (Overload)"}
                     </span>
                   </div>
-                ))}
+                </div>
               </div>
             ) : (
-              <div>
+              <div className="text-center py-4">
+                <div className="text-gray-400 mb-1">
+                  <svg
+                    className="w-8 h-8 mx-auto"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
                 <p className="text-xs text-gray-500 italic">
                   Belum ada data balita terdaftar
                 </p>
-                {/* Debug: Show raw data untuk troubleshooting */}
-                <div className="text-xs text-gray-400 mt-2">
-                  <p>Debug Info:</p>
-                  <p>- Total children in store: {children.length}</p>
-                  <p>- Facility ID: {facility.id}</p>
-                  <p>
-                    - Children with this facility ID:{" "}
-                    {
-                      children.filter(
-                        (child) => child.fasilitas_kesehatan_id === facility.id
-                      ).length
-                    }
-                  </p>
-                  {children.length > 0 && (
-                    <div>
-                      <p>- Sample child data:</p>
-                      {children.slice(0, 1).map((child) => (
-                        <div key={child.id} className="ml-2">
-                          <p>ID: {child.id}</p>
-                          <p>Facility ID: {child.fasilitas_kesehatan_id}</p>
-                          <p>Status: {child.status_nutrisi}</p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
               </div>
             )}
           </div>
 
-          <div className="text-xs text-gray-500">
-            Koordinat: {position[0].toFixed(4)}, {position[1].toFixed(4)}
+          {/* Footer - Koordinat */}
+          <div className="text-xs text-gray-500 pt-2 border-t border-gray-100">
+            <div className="flex items-center">
+              <svg
+                className="w-3 h-3 mr-1"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+              {coordinates[0].toFixed(4)}, {coordinates[1].toFixed(4)}
+            </div>
           </div>
         </div>
       </Popup>
