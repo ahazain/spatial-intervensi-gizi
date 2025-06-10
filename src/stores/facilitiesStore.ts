@@ -41,15 +41,15 @@ export const useFacilitiesStore = create<FacilitiesStore>((set, get) => ({
     get().facilities.find((facility) => facility.id === id),
 
   initializeFromSupabase: async () => {
-    console.log("🔄 Mulai inisialisasi dari Supabase...");
+    console.log(" Mulai inisialisasi dari Supabase...");
     try {
       const data = await getAllFasilitas();
-      console.log("✅ Data berhasil diambil dari Supabase:", data);
-      console.log("📊 Jumlah data:", data?.length);
+      console.log(" Data berhasil diambil dari Supabase:", data);
+      console.log("Jumlah data:", data?.length);
       set({ facilities: data });
-      console.log("✅ Store berhasil diupdate");
+      console.log("Store berhasil diupdate");
     } catch (err) {
-      console.error("❌ Gagal inisialisasi dari Supabase:", err);
+      console.error(" Gagal inisialisasi dari Supabase:", err);
     }
   },
 }));

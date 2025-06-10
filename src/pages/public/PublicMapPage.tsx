@@ -18,7 +18,7 @@ const PublicMapPage: React.FC = () => {
   const { facilities, initializeFromSupabase: initFacilities } =
     useFacilitiesStore();
 
-  const { kecamatanList, initializeMockData: initKecamatan } =
+  const { kecamatanList, initializeFromSupabase: initKecamatan } =
     useKecamatanStore();
 
   const [mapCenter, setMapCenter] = useState<[number, number]>(SURABAYA_CENTER);
