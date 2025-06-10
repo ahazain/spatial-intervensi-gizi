@@ -14,9 +14,10 @@ import PageHeader from "../../components/ui/PageHeader";
 const SURABAYA_CENTER: [number, number] = [-7.2575, 112.7521];
 
 const PublicMapPage: React.FC = () => {
-  const { children, initializeMockData: initChildren } = useChildrenStore();
-  const { facilities, initializeMockData: initFacilities } =
+  const { children, initializeFromSupabase } = useChildrenStore();
+  const { facilities, initializeFromSupabase: initFacilities } =
     useFacilitiesStore();
+
   const { kecamatanList, initializeMockData: initKecamatan } =
     useKecamatanStore();
 
@@ -33,10 +34,10 @@ const PublicMapPage: React.FC = () => {
 
   // Initialize mock data on component mount
   useEffect(() => {
-    initChildren();
+    initializeFromSupabase();
     initFacilities();
     initKecamatan();
-  }, [initChildren, initFacilities, initKecamatan]);
+  }, [initializeFromSupabase, initFacilities, initKecamatan]);
 
   // Filter children based on filters
   const filteredChildren = children.filter((balita: Balita) => {

@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { Balita } from "../types";
-import { balitaList as mockChildren } from "../lib/mockData";
+import { getAllBalita } from "../services/balitaService";
 
 interface ChildrenStore {
   children: Balita[];
@@ -9,7 +9,7 @@ interface ChildrenStore {
   updateChild: (id: string, updatedChild: Partial<Balita>) => void;
   deleteChild: (id: string) => void;
   getChildById: (id: string) => Balita | undefined;
-  initializeMockData: () => void;
+  initializeFromSupabase: () => Promise<void>;
 }
 
 export const useChildrenStore = create<ChildrenStore>((set, get) => ({
@@ -35,6 +35,16 @@ export const useChildrenStore = create<ChildrenStore>((set, get) => ({
     })),
 
   getChildById: (id: string) => get().children.find((child) => child.id === id),
-
-  initializeMockData: () => set({ children: mockChildren }),
+  initializeFromSupabase: async () => {
+    console.log("🔄 Mulai inisialisasi dari Supabase...");
+    try {
+      const data = await getAllBalita();
+      console.log("✅ Data berhasil diambil dari Supabase:", data);
+      console.log("📊 Jumlah data:", data?.length);
+      set({ children: data });
+      console.log("✅ Store berhasil diupdate");
+    } catch (err) {
+      console.error("❌ Gagal inisialisasi dari Supabase:", err);
+    }
+  },
 }));

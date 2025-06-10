@@ -6,6 +6,10 @@ import {
   // Navigate,
 } from "react-router-dom";
 
+// Import store
+import { useChildrenStore } from "../src/stores/childrenStore"; // Sesuaikan path
+import { useFacilitiesStore } from "./stores/facilitiesStore";
+
 // Layouts
 import DashboardLayout from "./components/layouts/DashboardLayout";
 import PublicLayout from "./components/layouts/PublicLayout";
@@ -33,6 +37,17 @@ import RegisterPage from "./pages/auth/RegisterPage";
 import ProtectedRoute from "../src/helper/ProtectedRoute";
 
 function App() {
+  // Inisialisasi store
+  const { initializeFromSupabase } = useChildrenStore();
+  const { initializeFromSupabase: initializeFacilitiesFromSupabase } =
+    useFacilitiesStore();
+
+  useEffect(() => {
+    // Inisialisasi data dari Supabase saat aplikasi dimuat
+    initializeFromSupabase();
+    initializeFacilitiesFromSupabase();
+  }, [initializeFromSupabase, initializeFacilitiesFromSupabase]);
+
   return (
     <Router>
       <Routes>

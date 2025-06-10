@@ -144,7 +144,7 @@ export const kecamatanList: Kecamatan[] = [
     },
   },
   {
-    id: "kec-002",
+    id: "kec-003",
     nama: "Gubeng",
     riskLevel: "perlu-diperhatikan",
     area: {
@@ -265,7 +265,7 @@ export const kecamatanList: Kecamatan[] = [
     },
   },
   {
-    id: "kec-003",
+    id: "kec-00r",
     nama: "Wonokromo",
     riskLevel: "aman",
     area: {
