@@ -5,54 +5,52 @@ export interface User {
   email: string;
 }
 
-// Nutrition status types
-export type NutritionStatus =
-  | "normal"
-  | "underweight"
-  | "severely_underweight"
-  | "stunting";
-
-// Children data
-export interface Child {
+export interface PenyakitMenular {
   id: string;
-  name: string;
-  age: number; // Age in months
-  nutritionStatus: NutritionStatus;
-  district: string;
-  coordinates: [number, number]; // [latitude, longitude]
-  createdAt: string;
-  updatedAt: string;
+  nama:
+    | "difteri"
+    | "pertusis"
+    | "tetanus neonaterum"
+    | "hepatitis B"
+    | "suspek campak";
+  jumlah: number;
+  kecamatan_id: string;
 }
 
-// Health facility
-export interface HealthFacility {
+export interface Kecamatan {
   id: string;
-  name: string;
-  type: "puskesmas" | "pustu"; // Health center or sub-health center
-  district: string;
-  coordinates: [number, number]; // [latitude, longitude]
+  nama: string;
+  area: GeoPolygon;
+  riskLevel: "rawan" | "perlu-diperhatikan" | "aman";
+}
+export interface GeoPolygon {
+  type: "Polygon";
+  coordinates: number[][][];
+}
+export interface Balita {
+  id: string;
+  nama: string;
+  statusNutrisi: "normal" | "buruk" | "kurang" | "stunting";
+  fasilitasKesehatan_id: string;
+}
+export interface GeoPoint {
+  type: "Point";
+  coordinates: [number, number];
+}
+export interface FasilitasKesehatan {
+  id: string;
+  nama: string;
+  type: "puskesmas" | "pustu"; //union
+  Kecamatan_id: string;
+  lokasi: GeoPoint;
   capacity: number;
-  createdAt: string;
-  updatedAt: string;
 }
-
-// District data
-export interface District {
-  id: string;
-  name: string;
-  totalChildren: number;
-  nutritionCases: {
-    normal: number;
-    underweight: number;
-    severely_underweight: number;
-    stunting: number;
-  };
-}
-
-// Spatial analysis result
-export interface SpatialAnalysis {
-  district: string;
-  facilityCoverage: number; // Percentage of district covered by health facilities
-  childrenWithinBuffer: number; // Number of children within 1km of health facilities
-  childrenOutsideBuffer: number; // Number of children outside 1km of health facilities
+export interface MapFilters {
+  kecamatanList: string;
+  showAreaRawan: boolean;
+  showAreaPerluDiperhatikan: boolean;
+  showAreaAman: boolean;
+  showPuskesmas: boolean;
+  showPustu: boolean;
+  showPenyakitMenular: boolean;
 }

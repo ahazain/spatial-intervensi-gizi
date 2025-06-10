@@ -5,9 +5,6 @@ import {
   Route,
   // Navigate,
 } from "react-router-dom";
-import { useAuthStore } from "./stores/authStore";
-import { useChildrenStore } from "./stores/childrenStore";
-import { useFacilitiesStore } from "./stores/facilitiesStore";
 
 // Layouts
 import DashboardLayout from "./components/layouts/DashboardLayout";
@@ -16,16 +13,16 @@ import PublicLayout from "./components/layouts/PublicLayout";
 // Public Pages
 import HomePage from "./pages/public/HomePage";
 import PublicMapPage from "./pages/public/PublicMapPage";
-import PublicStatsPage from "./pages/public/PublicStatsPage";
+// import PublicStatsPage from "./pages/public/PublicStatsPage";
 
 // Protected Pages
-import DashboardPage from "./pages/dashboard/DashboardPage";
-import ChildrenPage from "./pages/dashboard/ChildrenPage";
-import ChildFormPage from "./pages/dashboard/ChildFormPage";
-import FacilitiesPage from "./pages/dashboard/FacilitiesPage";
-import MapAnalysisPage from "./pages/dashboard/MapAnalysisPage";
-import StatisticsPage from "./pages/dashboard/StatisticsPage";
-import FacilityFormPage from "./pages/dashboard/FacilityFormPage";
+// import DashboardPage from "./pages/dashboard/DashboardPage";
+// import ChildrenPage from "./pages/dashboard/ChildrenPage";
+// import ChildFormPage from "./pages/dashboard/ChildFormPage";
+// import FacilitiesPage from "./pages/dashboard/FacilitiesPage";
+// import MapAnalysisPage from "./pages/dashboard/MapAnalysisPage";
+// import StatisticsPage from "./pages/dashboard/StatisticsPage";
+// import FacilityFormPage from "./pages/dashboard/FacilityFormPage";
 
 //auth
 import Test from "./pages/testSupabase";
@@ -36,18 +33,6 @@ import RegisterPage from "./pages/auth/RegisterPage";
 import ProtectedRoute from "../src/helper/ProtectedRoute";
 
 function App() {
-  const { checkAuth } = useAuthStore();
-  const { fetchChildren } = useChildrenStore();
-  const { fetchFacilities } = useFacilitiesStore();
-  useEffect(() => {
-    // Check authentication status on app startup
-    checkAuth();
-
-    // Load initial data
-    fetchChildren();
-    fetchFacilities();
-  }, [checkAuth, fetchChildren, fetchFacilities]);
-
   return (
     <Router>
       <Routes>
@@ -56,7 +41,7 @@ function App() {
           <Route path="test-supabase" element={<Test />} />
           <Route index element={<HomePage />} />
           <Route path="map" element={<PublicMapPage />} />
-          <Route path="statistics" element={<PublicStatsPage />} />
+          {/* <Route path="statistics" element={<PublicStatsPage />} /> */}
         </Route>
 
         {/* auth routes */}
@@ -71,9 +56,9 @@ function App() {
             </ProtectedRoute>
           }
         >
-          <Route index element={<DashboardPage />} />
-          <Route path="children" element={<ChildrenPage />} />
-          <Route
+          {/* <Route index element={<DashboardPage />} />
+          <Route path="children" element={<ChildrenPage />} /> */}
+          {/* <Route
             path="children/add"
             element={
               <ProtectedRoute>
@@ -105,9 +90,9 @@ function App() {
                 <FacilityFormPage />
               </ProtectedRoute>
             }
-          />
-          <Route path="map-analysis" element={<MapAnalysisPage />} />
-          <Route path="statistics" element={<StatisticsPage />} />
+          /> */}
+          {/* <Route path="map-analysis" element={<MapAnalysisPage />} /> */}
+          {/* <Route path="statistics" element={<StatisticsPage />} /> */}
         </Route>
       </Routes>
     </Router>
