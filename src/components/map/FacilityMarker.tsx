@@ -2,7 +2,7 @@ import React from "react";
 import { Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import { FasilitasKesehatan } from "../../types";
-import { balitaList } from "../../lib/mockData";
+import { useChildrenStore } from "../../stores/childrenStore";
 
 // Create custom icon
 const createFacilityIcon = (type: "puskesmas" | "pustu") => {
@@ -35,17 +35,36 @@ const FacilityMarker: React.FC<FacilityMarkerProps> = ({
   facility,
   onClick,
 }) => {
+  // Get children data from Supabase store
+  const { children } = useChildrenStore();
+
   const handleClick = () => {
     if (onClick) onClick(facility);
   };
 
-  const facilityChildren = balitaList.filter(
-    (child) => child.fasilitasKesehatan_id === facility.id
+  // ✅ PERBAIKAN: Gunakan field name yang benar dari database
+  // Filter children by facility ID - gunakan fasilitas_kesehatan_id (dengan underscore)
+  const facilityChildren = children.filter((child) => {
+    // ✅ Debug: Log data untuk memastikan field name
+    console.log("🔍 Comparing:", {
+      childFacilityId: child.fasilitas_kesehatan_id, // ✅ Gunakan underscore
+      facilityId: facility.id,
+      isMatch: child.fasilitas_kesehatan_id === facility.id,
+    });
+
+    return child.fasilitas_kesehatan_id === facility.id; // ✅ Perbaikan field name
+  });
+
+  console.log(
+    `📊 Final count for ${facility.nama}: ${facilityChildren.length} children`
   );
 
+  // Calculate nutrition statistics
   const nutritionStats = facilityChildren.reduce(
     (acc, child) => {
-      acc[child.statusNutrisi] = (acc[child.statusNutrisi] || 0) + 1;
+      // ✅ PERBAIKAN: Gunakan field name yang benar
+      const status = child.status_nutrisi; // ✅ Gunakan underscore, bukan camelCase
+      acc[status] = (acc[status] || 0) + 1;
       acc.total = (acc.total || 0) + 1;
       return acc;
     },
@@ -92,6 +111,10 @@ const FacilityMarker: React.FC<FacilityMarkerProps> = ({
               <span className="ml-2 text-sm text-gray-600">
                 Kapasitas: {facility.capacity}
               </span>
+            </div>
+            {/* Debug info - hapus setelah masalah terpecahkan */}
+            <div className="text-xs text-gray-400 mt-1">
+              Debug: Facility ID = {facility.id}
             </div>
           </div>
 
@@ -143,9 +166,37 @@ const FacilityMarker: React.FC<FacilityMarkerProps> = ({
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-gray-500 italic">
-                Belum ada data balita terdaftar
-              </p>
+              <div>
+                <p className="text-xs text-gray-500 italic">
+                  Belum ada data balita terdaftar
+                </p>
+                {/* Debug: Show raw data untuk troubleshooting */}
+                <div className="text-xs text-gray-400 mt-2">
+                  <p>Debug Info:</p>
+                  <p>- Total children in store: {children.length}</p>
+                  <p>- Facility ID: {facility.id}</p>
+                  <p>
+                    - Children with this facility ID:{" "}
+                    {
+                      children.filter(
+                        (child) => child.fasilitas_kesehatan_id === facility.id
+                      ).length
+                    }
+                  </p>
+                  {children.length > 0 && (
+                    <div>
+                      <p>- Sample child data:</p>
+                      {children.slice(0, 1).map((child) => (
+                        <div key={child.id} className="ml-2">
+                          <p>ID: {child.id}</p>
+                          <p>Facility ID: {child.fasilitas_kesehatan_id}</p>
+                          <p>Status: {child.status_nutrisi}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
             )}
           </div>
 

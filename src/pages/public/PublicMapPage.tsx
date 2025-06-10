@@ -17,11 +17,11 @@ const PublicMapPage: React.FC = () => {
   const { children, initializeFromSupabase } = useChildrenStore();
   const { facilities, initializeFromSupabase: initFacilities } =
     useFacilitiesStore();
-
   const { kecamatanList, initializeFromSupabase: initKecamatan } =
     useKecamatanStore();
 
   const [mapCenter, setMapCenter] = useState<[number, number]>(SURABAYA_CENTER);
+  const [isLoading, setIsLoading] = useState(true); // ✅ Added loading state
   const [filters, setFilters] = useState<MapFilters>({
     kecamatanList: "all",
     showAreaRawan: true,
@@ -32,19 +32,44 @@ const PublicMapPage: React.FC = () => {
     showPenyakitMenular: false,
   });
 
-  // Initialize mock data on component mount
   useEffect(() => {
-    initializeFromSupabase();
-    initFacilities();
-    initKecamatan();
-  }, [initializeFromSupabase, initFacilities, initKecamatan]);
+    const initializeAllData = async () => {
+      console.log("🔄 Mulai inisialisasi semua data...");
+      setIsLoading(true);
+
+      try {
+        await Promise.all([
+          initializeFromSupabase(),
+          initFacilities(),
+          initKecamatan(),
+        ]);
+        console.log("✅ Semua data berhasil dimuat");
+      } catch (error) {
+        console.error("❌ Error loading data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeAllData();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Debug effect untuk monitor data changes
+  useEffect(() => {
+    console.log(
+      "🔄 Data updated - Children:",
+      children.length,
+      "Facilities:",
+      facilities.length
+    );
+  }, [children, facilities]);
 
   // Filter children based on filters
   const filteredChildren = children.filter((balita: Balita) => {
     // Filter by kecamatan if specific kecamatan is selected
     if (filters.kecamatanList !== "all") {
       const facility = facilities.find(
-        (f) => f.id === balita.fasilitasKesehatan_id
+        (f) => f.id === balita.fasilitas_kesehatan_id // ✅ Perbaikan field name
       );
       if (!facility || facility.Kecamatan_id !== filters.kecamatanList) {
         return false;
@@ -120,6 +145,26 @@ const PublicMapPage: React.FC = () => {
   const centerMap = () => {
     setMapCenter(SURABAYA_CENTER);
   };
+
+  // ✅ Show loading state
+  if (isLoading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <PageHeader
+          title="Peta Sebaran Kasus Gizi"
+          description="Peta interaktif menunjukkan sebaran kasus gizi di Kota Surabaya"
+        />
+        <div className="mt-6 bg-white rounded-lg shadow p-8">
+          <div className="flex items-center justify-center h-96">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+              <p className="mt-4 text-gray-600">Memuat data peta...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -203,8 +248,8 @@ const PublicMapPage: React.FC = () => {
               {
                 filteredChildren.filter(
                   (child) =>
-                    child.statusNutrisi === "buruk" ||
-                    child.statusNutrisi === "stunting"
+                    child.status_nutrisi === "buruk" || // ✅ Perbaikan field name
+                    child.status_nutrisi === "stunting"
                 ).length
               }
             </div>

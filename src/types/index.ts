@@ -30,8 +30,8 @@ export interface GeoPolygon {
 export interface Balita {
   id: string;
   nama: string;
-  statusNutrisi: "normal" | "buruk" | "kurang" | "stunting";
-  fasilitasKesehatan_id: string;
+  status_nutrisi: "normal" | "buruk" | "kurang" | "stunting";
+  fasilitas_kesehatan_id: string;
 }
 export interface GeoPoint {
   type: "Point";

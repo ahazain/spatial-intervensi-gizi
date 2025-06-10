@@ -16,52 +16,6 @@ const KecamatanPolygon: React.FC<KecamatanPolygonProps> = ({
   kecamatan,
   onClick,
 }) => {
-  // Enhanced debugging
-  console.log("=== DEBUG KECAMATAN ===");
-  console.log("Kecamatan:", kecamatan.nama);
-  console.log("Full kecamatan object:", kecamatan);
-  console.log("Area exists:", !!kecamatan.area);
-  console.log("Area object:", kecamatan.area);
-  console.log("Area type:", kecamatan.area?.type);
-  console.log("Coordinates exists:", !!kecamatan.area?.coordinates);
-  console.log("Coordinates length:", kecamatan.area?.coordinates?.length);
-  console.log("Coordinates:", kecamatan.area?.coordinates);
-  console.log("========================");
-
-  // Pastikan data area tersedia dengan debugging yang lebih detail
-  if (!kecamatan.area) {
-    console.warn(`❌ Kecamatan ${kecamatan.nama}: area field is missing`);
-    return null;
-  }
-
-  if (!kecamatan.area.coordinates) {
-    console.warn(
-      `❌ Kecamatan ${kecamatan.nama}: coordinates field is missing`
-    );
-    console.log("Available area properties:", Object.keys(kecamatan.area));
-    return null;
-  }
-
-  if (!Array.isArray(kecamatan.area.coordinates)) {
-    console.warn(`❌ Kecamatan ${kecamatan.nama}: coordinates is not an array`);
-    console.log("Coordinates type:", typeof kecamatan.area.coordinates);
-    console.log("Coordinates value:", kecamatan.area.coordinates);
-    return null;
-  }
-
-  if (kecamatan.area.coordinates.length === 0) {
-    console.warn(`❌ Kecamatan ${kecamatan.nama}: coordinates array is empty`);
-    return null;
-  }
-
-  if (!Array.isArray(kecamatan.area.coordinates[0])) {
-    console.warn(
-      `❌ Kecamatan ${kecamatan.nama}: first coordinate ring is not an array`
-    );
-    console.log("First element:", kecamatan.area.coordinates[0]);
-    return null;
-  }
-
   const handleClick = () => {
     if (onClick) {
       onClick(kecamatan);
@@ -150,14 +104,14 @@ const KecamatanPolygon: React.FC<KecamatanPolygonProps> = ({
   // Filter balita berdasarkan fasilitas kesehatan di kecamatan ini
   const balitaKecamatan = balitaList.filter((balita) =>
     fasilitasKecamatan.some(
-      (facility) => facility.id === balita.fasilitasKesehatan_id
+      (facility) => facility.id === balita.fasilitas_kesehatan_id
     )
   );
 
   // Hitung statistik nutrisi
   const nutritionStats = balitaKecamatan.reduce(
     (acc, balita) => {
-      acc[balita.statusNutrisi] = (acc[balita.statusNutrisi] || 0) + 1;
+      acc[balita.status_nutrisi] = (acc[balita.status_nutrisi] || 0) + 1;
       acc.total = (acc.total || 0) + 1;
       return acc;
     },

@@ -12,7 +12,7 @@ interface FacilitiesStore {
   ) => void;
   deleteFacility: (id: string) => void;
   getFacilityById: (id: string) => FasilitasKesehatan | undefined;
-  initializeFromSupabase: () => void;
+  initializeFromSupabase: () => Promise<void>; // ✅ Fixed: harus Promise<void>
 }
 
 export const useFacilitiesStore = create<FacilitiesStore>((set, get) => ({
@@ -41,15 +41,17 @@ export const useFacilitiesStore = create<FacilitiesStore>((set, get) => ({
     get().facilities.find((facility) => facility.id === id),
 
   initializeFromSupabase: async () => {
-    console.log(" Mulai inisialisasi dari Supabase...");
+    // ✅ Fixed: tambahkan async
+    console.log("🔄 Mulai inisialisasi fasilitas dari Supabase...");
     try {
       const data = await getAllFasilitas();
-      console.log(" Data berhasil diambil dari Supabase:", data);
-      console.log("Jumlah data:", data?.length);
-      set({ facilities: data });
-      console.log("Store berhasil diupdate");
+      console.log("✅ Data fasilitas berhasil diambil dari Supabase:", data);
+      console.log("📊 Jumlah data fasilitas:", data?.length);
+      set({ facilities: data || [] }); // ✅ Added fallback untuk data null
+      console.log("✅ Facilities store berhasil diupdate");
     } catch (err) {
-      console.error(" Gagal inisialisasi dari Supabase:", err);
+      console.error("❌ Gagal inisialisasi fasilitas dari Supabase:", err);
+      set({ facilities: [] }); // ✅ Set empty array on error
     }
   },
 }));

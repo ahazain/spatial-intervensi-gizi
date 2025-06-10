@@ -1,7 +1,6 @@
-// stores/penyakitMenularStore.ts
 import { create } from "zustand";
 import { PenyakitMenular } from "../types";
-
+import { getAllPenyakitMenular } from "../services/fasilitesService";
 interface PenyakitMenularStore {
   penyakitMenularList: PenyakitMenular[];
   setPenyakitMenularList: (penyakitMenularList: PenyakitMenular[]) => void;
@@ -14,6 +13,7 @@ interface PenyakitMenularStore {
   getPenyakitMenularById: (id: string) => PenyakitMenular | undefined;
   getPenyakitMenularByKecamatan: (kecamatanId: string) => PenyakitMenular[];
   getTotalPenyakitMenularByKecamatan: (kecamatanId: string) => number;
+  initializeFromSupabase: () => void;
 }
 
 export const usePenyakitMenularStore = create<PenyakitMenularStore>(
@@ -61,5 +61,17 @@ export const usePenyakitMenularStore = create<PenyakitMenularStore>(
           (penyakit) => penyakit.kecamatan_id === kecamatanId
         )
         .reduce((total, penyakit) => total + penyakit.jumlah, 0),
+    initializeFromSupabase: async () => {
+      console.log(" Mulai inisialisasi dari Supabase...");
+      try {
+        const data = await getAllPenyakitMenular();
+        console.log(" Data berhasil diambil dari Supabase:", data);
+        console.log("Jumlah data:", data?.length);
+        set({ penyakitMenularList: data });
+        console.log("Store berhasil diupdate");
+      } catch (err) {
+        console.error(" Gagal inisialisasi dari Supabase:", err);
+      }
+    },
   })
 );
