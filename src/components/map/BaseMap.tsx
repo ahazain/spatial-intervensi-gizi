@@ -3,11 +3,10 @@ import { MapContainer, TileLayer, useMap, ZoomControl } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
-// Fix for the default icon issue in Leaflet
 import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 
-let DefaultIcon = L.icon({
+const DefaultIcon = L.icon({
   iconUrl: icon,
   shadowUrl: iconShadow,
   iconSize: [25, 41],
@@ -17,7 +16,7 @@ let DefaultIcon = L.icon({
 
 L.Marker.prototype.options.icon = DefaultIcon;
 
-// Approximate center of Surabaya
+// Titik tengah peta default
 const CENTER_POSITION: [number, number] = [-7.2575, 112.7521];
 const DEFAULT_ZOOM = 12;
 
@@ -35,7 +34,6 @@ interface BaseMapProps {
   style?: React.CSSProperties;
 }
 
-// Component to handle flying to a position
 const MapFlyTo: React.FC<MapFlyToProps> = ({ position, zoom = DEFAULT_ZOOM }) => {
   const map = useMap();
   
@@ -59,7 +57,6 @@ const BaseMap: React.FC<BaseMapProps> = ({
   const [mapReady, setMapReady] = useState(false);
 
   useEffect(() => {
-    // Set map ready after a small delay to ensure proper initialization
     const timer = setTimeout(() => {
       setMapReady(true);
     }, 100);
