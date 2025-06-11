@@ -12,9 +12,9 @@ interface MapControlsProps {
 
 export interface MapFilters {
   kecamatanList: string;
-  showAreaRawan: boolean;
-  showAreaPerluDiperhatikan: boolean;
-  showAreaAman: boolean;
+  showAreaKritis: boolean;
+  showAreaRentan: boolean;
+  showAreaTerkelola: boolean;
   showPuskesmas: boolean;
   showPustu: boolean;
   showPenyakitMenular: boolean;
@@ -22,9 +22,9 @@ export interface MapFilters {
 
 const defaultFilters: MapFilters = {
   kecamatanList: "all",
-  showAreaRawan: true,
-  showAreaPerluDiperhatikan: true,
-  showAreaAman: true,
+  showAreaKritis: true,
+  showAreaRentan: true,
+  showAreaTerkelola: true,
   showPuskesmas: true,
   showPustu: true,
   showPenyakitMenular: false,
@@ -126,9 +126,9 @@ const MapControls: React.FC<MapControlsProps> = ({
                 <input
                   type="checkbox"
                   className="h-4 w-4 text-red-600 border-gray-300 rounded"
-                  checked={filters.showAreaRawan}
+                  checked={filters.showAreaKritis}
                   onChange={(e) =>
-                    handleFilterChange("showAreaRawan", e.target.checked)
+                    handleFilterChange("showAreaKritis", e.target.checked)
                   }
                 />
                 <span className="ml-2 text-xs text-gray-700 flex items-center">
@@ -140,12 +140,9 @@ const MapControls: React.FC<MapControlsProps> = ({
                 <input
                   type="checkbox"
                   className="h-4 w-4 text-yellow-600 border-gray-300 rounded"
-                  checked={filters.showAreaPerluDiperhatikan}
+                  checked={filters.showAreaRentan}
                   onChange={(e) =>
-                    handleFilterChange(
-                      "showAreaPerluDiperhatikan",
-                      e.target.checked
-                    )
+                    handleFilterChange("showAreaRentan", e.target.checked)
                   }
                 />
                 <span className="ml-2 text-xs text-gray-700 flex items-center">
@@ -157,9 +154,9 @@ const MapControls: React.FC<MapControlsProps> = ({
                 <input
                   type="checkbox"
                   className="h-4 w-4 text-green-600 border-gray-300 rounded"
-                  checked={filters.showAreaAman}
+                  checked={filters.showAreaTerkelola}
                   onChange={(e) =>
-                    handleFilterChange("showAreaAman", e.target.checked)
+                    handleFilterChange("showAreaTerkelola", e.target.checked)
                   }
                 />
                 <span className="ml-2 text-xs text-gray-700 flex items-center">
