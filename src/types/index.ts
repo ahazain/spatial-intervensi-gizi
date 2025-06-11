@@ -21,7 +21,6 @@ export interface Kecamatan {
   id: string;
   nama: string;
   area: GeoPolygon;
-  riskLevel: "rawan" | "perlu-diperhatikan" | "aman";
 }
 export interface GeoPolygon {
   type: "Polygon";
@@ -30,8 +29,8 @@ export interface GeoPolygon {
 export interface Balita {
   id: string;
   nama: string;
-  statusNutrisi: "normal" | "buruk" | "kurang" | "stunting";
-  fasilitasKesehatan_id: string;
+  status_nutrisi: "normal" | "buruk" | "kurang" | "stunting";
+  fasilitas_kesehatan_id: string;
 }
 export interface GeoPoint {
   type: "Point";
@@ -46,11 +45,45 @@ export interface FasilitasKesehatan {
   capacity: number;
 }
 export interface MapFilters {
-  kecamatanList: string;
-  showAreaRawan: boolean;
-  showAreaPerluDiperhatikan: boolean;
-  showAreaAman: boolean;
+  kecamatanList: string; // ✅ Fleksibel
+  showAreaKritis: boolean; // ✅ Fleksibel
+  showAreaRentan: boolean;
+  showAreaTerkelola: boolean;
   showPuskesmas: boolean;
   showPustu: boolean;
   showPenyakitMenular: boolean;
+}
+
+//struktur data untuk view
+export interface PopUpFailitasKesehatan {
+  fasilitas_id: string;
+  fasilitas_nama: string;
+  id: string; // alias untuk kecamatan_id
+  nama: string; // alias untuk kecamatan_nama
+  type: string;
+  capacity: number;
+  total_balita: number;
+  jumlah_normal: number;
+  jumlah_kurang: number;
+  jumlah_buruk: number;
+  jumlah_stunting: number;
+  lokasi: {
+    type: "Point";
+    coordinates: [number, number];
+  };
+}
+
+export interface KecamatanRingkasan {
+  kecamatan_id: string;
+  kecamatan_nama: string;
+  id: string; // alias untuk kecamatan_id
+  nama: string; // alias untuk kecamatan_nama
+  area: GeoPolygon;
+  total_balita: number;
+  jumlah_buruk: number;
+  jumlah_stunting: number;
+  total_penyakit: number;
+  jumlah_faskes: number;
+  nama_faskes: string[];
+  area_kategori: "Kritis" | "Rentan" | "Terkelola";
 }

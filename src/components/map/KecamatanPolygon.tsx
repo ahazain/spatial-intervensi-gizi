@@ -1,89 +1,38 @@
 import React from "react";
 import { Polygon, Popup } from "react-leaflet";
-import { Kecamatan } from "../../types";
-import {
-  balitaList,
-  fasilitasKesehatanList,
-  penyakitMenularList,
-} from "../../lib/mockData";
+import { KecamatanRingkasan } from "../../types";
 
 interface KecamatanPolygonProps {
-  kecamatan: Kecamatan;
-  onClick?: (kecamatan: Kecamatan) => void;
+  kecamatan: KecamatanRingkasan;
+  onClick?: (kecamatan: KecamatanRingkasan) => void;
 }
 
 const KecamatanPolygon: React.FC<KecamatanPolygonProps> = ({
   kecamatan,
   onClick,
 }) => {
-  // Enhanced debugging
-  console.log("=== DEBUG KECAMATAN ===");
-  console.log("Kecamatan:", kecamatan.nama);
-  console.log("Full kecamatan object:", kecamatan);
-  console.log("Area exists:", !!kecamatan.area);
-  console.log("Area object:", kecamatan.area);
-  console.log("Area type:", kecamatan.area?.type);
-  console.log("Coordinates exists:", !!kecamatan.area?.coordinates);
-  console.log("Coordinates length:", kecamatan.area?.coordinates?.length);
-  console.log("Coordinates:", kecamatan.area?.coordinates);
-  console.log("========================");
-
-  // Pastikan data area tersedia dengan debugging yang lebih detail
-  if (!kecamatan.area) {
-    console.warn(`❌ Kecamatan ${kecamatan.nama}: area field is missing`);
-    return null;
-  }
-
-  if (!kecamatan.area.coordinates) {
-    console.warn(
-      `❌ Kecamatan ${kecamatan.nama}: coordinates field is missing`
-    );
-    console.log("Available area properties:", Object.keys(kecamatan.area));
-    return null;
-  }
-
-  if (!Array.isArray(kecamatan.area.coordinates)) {
-    console.warn(`❌ Kecamatan ${kecamatan.nama}: coordinates is not an array`);
-    console.log("Coordinates type:", typeof kecamatan.area.coordinates);
-    console.log("Coordinates value:", kecamatan.area.coordinates);
-    return null;
-  }
-
-  if (kecamatan.area.coordinates.length === 0) {
-    console.warn(`❌ Kecamatan ${kecamatan.nama}: coordinates array is empty`);
-    return null;
-  }
-
-  if (!Array.isArray(kecamatan.area.coordinates[0])) {
-    console.warn(
-      `❌ Kecamatan ${kecamatan.nama}: first coordinate ring is not an array`
-    );
-    console.log("First element:", kecamatan.area.coordinates[0]);
-    return null;
-  }
-
   const handleClick = () => {
     if (onClick) {
       onClick(kecamatan);
     }
   };
 
-  // Risk level colors
-  const getRiskColor = (riskLevel: string) => {
-    switch (riskLevel) {
-      case "rawan":
+  // Risk level colors berdasarkan area_kategori
+  const getRiskColor = (kategori: "Kritis" | "Rentan" | "Terkelola") => {
+    switch (kategori) {
+      case "Kritis":
         return {
           color: "#dc2626",
           fillColor: "#fef2f2",
           borderColor: "#b91c1c",
         };
-      case "perlu-diperhatikan":
+      case "Rentan":
         return {
           color: "#f59e0b",
           fillColor: "#fffbeb",
           borderColor: "#d97706",
         };
-      case "aman":
+      case "Terkelola":
         return {
           color: "#059669",
           fillColor: "#ecfdf5",
@@ -142,40 +91,38 @@ const KecamatanPolygon: React.FC<KecamatanPolygonProps> = ({
     `✅ Rendering polygon for ${kecamatan.nama} with ${positions.length} points`
   );
 
-  // Filter fasilitas kesehatan berdasarkan kecamatan
-  const fasilitasKecamatan = fasilitasKesehatanList.filter(
-    (facility) => facility.Kecamatan_id === kecamatan.id
+  // Hitung persentase nutrisi buruk dari total balita
+  const persentaseBuruk =
+    kecamatan.total_balita > 0
+      ? Math.round((kecamatan.jumlah_buruk / kecamatan.total_balita) * 100)
+      : 0;
+
+  const persentaseStunting =
+    kecamatan.total_balita > 0
+      ? Math.round((kecamatan.jumlah_stunting / kecamatan.total_balita) * 100)
+      : 0;
+
+  // Hitung jumlah balita normal (asumsi: total - buruk - stunting)
+  const balitaNormal = Math.max(
+    0,
+    kecamatan.total_balita - kecamatan.jumlah_buruk - kecamatan.jumlah_stunting
   );
 
-  // Filter balita berdasarkan fasilitas kesehatan di kecamatan ini
-  const balitaKecamatan = balitaList.filter((balita) =>
-    fasilitasKecamatan.some(
-      (facility) => facility.id === balita.fasilitasKesehatan_id
-    )
-  );
+  const riskColors = getRiskColor(kecamatan.area_kategori);
 
-  // Hitung statistik nutrisi
-  const nutritionStats = balitaKecamatan.reduce(
-    (acc, balita) => {
-      acc[balita.statusNutrisi] = (acc[balita.statusNutrisi] || 0) + 1;
-      acc.total = (acc.total || 0) + 1;
-      return acc;
-    },
-    {
-      normal: 0,
-      kurang: 0,
-      buruk: 0,
-      stunting: 0,
-      total: 0,
+  // Function untuk mendapatkan label kategori dalam bahasa Indonesia
+  const getKategoriLabel = (kategori: "Kritis" | "Rentan" | "Terkelola") => {
+    switch (kategori) {
+      case "Kritis":
+        return "Kritis";
+      case "Rentan":
+        return "Rentan";
+      case "Terkelola":
+        return "Terkelola";
+      default:
+        return kategori;
     }
-  );
-
-  // Filter penyakit menular berdasarkan kecamatan
-  const penyakitKecamatan = penyakitMenularList.filter(
-    (penyakit) => penyakit.kecamatan_id === kecamatan.id
-  );
-
-  const riskColors = getRiskColor(kecamatan.riskLevel);
+  };
 
   return (
     <Polygon
@@ -207,30 +154,53 @@ const KecamatanPolygon: React.FC<KecamatanPolygonProps> = ({
         },
       }}
     >
-      <Popup maxWidth={380} className="kecamatan-popup">
-        <div className="p-4 min-w-[320px]">
+      <Popup maxWidth={400} className="kecamatan-popup">
+        <div className="p-4 min-w-[350px]">
           {/* Header */}
           <div className="mb-4 pb-3 border-b border-gray-200">
             <h3 className="text-lg font-bold text-gray-900 mb-2">
               Kecamatan {kecamatan.nama}
             </h3>
             <div className="flex items-center">
-              <span className="text-sm text-gray-600 mr-2">Status Risiko:</span>
+              <span className="text-sm text-gray-600 mr-2">Status Area:</span>
               <span
                 className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                  kecamatan.riskLevel === "rawan"
+                  kecamatan.area_kategori === "Kritis"
                     ? "bg-red-100 text-red-800 border border-red-200"
-                    : kecamatan.riskLevel === "perlu-diperhatikan"
+                    : kecamatan.area_kategori === "Rentan"
                     ? "bg-amber-100 text-amber-800 border border-amber-200"
                     : "bg-green-100 text-green-800 border border-green-200"
                 }`}
               >
-                {kecamatan.riskLevel === "rawan"
-                  ? "Rawan"
-                  : kecamatan.riskLevel === "perlu-diperhatikan"
-                  ? "Perlu Diperhatikan"
-                  : "Aman"}
+                {getKategoriLabel(kecamatan.area_kategori)}
               </span>
+            </div>
+          </div>
+
+          {/* Ringkasan Statistik */}
+          <div className="mb-4 bg-blue-50 p-3 rounded-lg border border-blue-200">
+            <h4 className="text-sm font-semibold text-blue-800 mb-2">
+              Ringkasan Data
+            </h4>
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-gray-600">Total Balita:</span>
+                <span className="font-bold text-blue-700">
+                  {kecamatan.total_balita}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-600">Fasilitas Kesehatan:</span>
+                <span className="font-bold text-blue-700">
+                  {kecamatan.jumlah_faskes}
+                </span>
+              </div>
+              <div className="flex items-center justify-between col-span-2">
+                <span className="text-gray-600">Total Penyakit Menular:</span>
+                <span className="font-bold text-red-600">
+                  {kecamatan.total_penyakit} kasus
+                </span>
+              </div>
             </div>
           </div>
 
@@ -241,35 +211,21 @@ const KecamatanPolygon: React.FC<KecamatanPolygonProps> = ({
                 Fasilitas Kesehatan
               </h4>
               <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                {fasilitasKecamatan.length} unit
+                {kecamatan.jumlah_faskes} unit
               </span>
             </div>
 
-            {fasilitasKecamatan.length > 0 ? (
-              <div className="space-y-2">
-                {fasilitasKecamatan.map((facility) => (
+            {kecamatan.nama_faskes && kecamatan.nama_faskes.length > 0 ? (
+              <div className="space-y-2 max-h-32 overflow-y-auto">
+                {kecamatan.nama_faskes.map((namaFaskes, index) => (
                   <div
-                    key={facility.id}
-                    className="flex items-center justify-between text-xs bg-gray-50 p-2 rounded"
+                    key={index}
+                    className="flex items-center text-xs bg-gray-50 p-2 rounded"
                   >
-                    <div className="flex items-center">
-                      <div
-                        className={`w-3 h-3 rounded-full mr-2 ${
-                          facility.type === "puskesmas"
-                            ? "bg-blue-500"
-                            : "bg-cyan-500"
-                        }`}
-                      />
-                      <span className="font-medium">{facility.nama}</span>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-gray-600 capitalize">
-                        {facility.type}
-                      </div>
-                      <div className="text-gray-500">
-                        Kapasitas: {facility.capacity}
-                      </div>
-                    </div>
+                    <div className="w-3 h-3 rounded-full bg-blue-500 mr-2" />
+                    <span className="font-medium text-gray-700">
+                      {namaFaskes}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -280,57 +236,69 @@ const KecamatanPolygon: React.FC<KecamatanPolygonProps> = ({
             )}
           </div>
 
-          {/* Statistik Nutrisi Balita */}
+          {/* Status Nutrisi Balita */}
           <div className="mb-4">
             <div className="flex items-center justify-between mb-2">
               <h4 className="text-sm font-semibold text-gray-800">
                 Status Nutrisi Balita
               </h4>
               <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
-                {nutritionStats.total} balita
+                {kecamatan.total_balita} balita
               </span>
             </div>
 
-            {nutritionStats.total > 0 ? (
-              <div className="grid grid-cols-2 gap-2">
+            {kecamatan.total_balita > 0 ? (
+              <div className="space-y-2">
+                {/* Normal */}
                 <div className="flex items-center justify-between text-xs bg-green-50 p-2 rounded">
                   <div className="flex items-center">
                     <div className="w-3 h-3 rounded-full bg-green-500 mr-2" />
                     <span>Normal</span>
                   </div>
-                  <span className="font-semibold text-green-700">
-                    {nutritionStats.normal}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between text-xs bg-yellow-50 p-2 rounded">
-                  <div className="flex items-center">
-                    <div className="w-3 h-3 rounded-full bg-yellow-500 mr-2" />
-                    <span>Kurang</span>
+                  <div className="text-right">
+                    <span className="font-semibold text-green-700">
+                      {balitaNormal}
+                    </span>
+                    <span className="text-green-600 ml-1">
+                      (
+                      {Math.round(
+                        (balitaNormal / kecamatan.total_balita) * 100
+                      )}
+                      %)
+                    </span>
                   </div>
-                  <span className="font-semibold text-yellow-700">
-                    {nutritionStats.kurang}
-                  </span>
                 </div>
 
+                {/* Gizi Buruk */}
                 <div className="flex items-center justify-between text-xs bg-red-50 p-2 rounded">
                   <div className="flex items-center">
                     <div className="w-3 h-3 rounded-full bg-red-500 mr-2" />
-                    <span>Buruk</span>
+                    <span>Gizi Buruk</span>
                   </div>
-                  <span className="font-semibold text-red-700">
-                    {nutritionStats.buruk}
-                  </span>
+                  <div className="text-right">
+                    <span className="font-semibold text-red-700">
+                      {kecamatan.jumlah_buruk}
+                    </span>
+                    <span className="text-red-600 ml-1">
+                      ({persentaseBuruk}%)
+                    </span>
+                  </div>
                 </div>
 
+                {/* Stunting */}
                 <div className="flex items-center justify-between text-xs bg-orange-50 p-2 rounded">
                   <div className="flex items-center">
                     <div className="w-3 h-3 rounded-full bg-orange-500 mr-2" />
                     <span>Stunting</span>
                   </div>
-                  <span className="font-semibold text-orange-700">
-                    {nutritionStats.stunting}
-                  </span>
+                  <div className="text-right">
+                    <span className="font-semibold text-orange-700">
+                      {kecamatan.jumlah_stunting}
+                    </span>
+                    <span className="text-orange-600 ml-1">
+                      ({persentaseStunting}%)
+                    </span>
+                  </div>
                 </div>
               </div>
             ) : (
@@ -340,33 +308,19 @@ const KecamatanPolygon: React.FC<KecamatanPolygonProps> = ({
             )}
           </div>
 
-          {/* Penyakit Menular */}
-          {penyakitKecamatan.length > 0 && (
-            <div className="pt-3 border-t border-gray-200">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="text-sm font-semibold text-gray-800">
-                  Penyakit Menular
-                </h4>
-                <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full">
-                  {penyakitKecamatan.reduce((sum, p) => sum + p.jumlah, 0)}{" "}
-                  kasus
-                </span>
-              </div>
-
-              <div className="space-y-2">
-                {penyakitKecamatan.map((penyakit) => (
-                  <div
-                    key={penyakit.id}
-                    className="flex items-center justify-between text-xs bg-red-50 p-2 rounded border border-red-100"
-                  >
-                    <span className="capitalize font-medium text-gray-700">
-                      {penyakit.nama}
-                    </span>
-                    <span className="font-bold text-red-600">
-                      {penyakit.jumlah} kasus
-                    </span>
-                  </div>
-                ))}
+          {/* Alert untuk kondisi kritis */}
+          {kecamatan.area_kategori === "Kritis" && (
+            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <div className="flex items-center">
+                <div className="w-4 h-4 rounded-full bg-red-500 mr-2 flex-shrink-0" />
+                <div>
+                  <p className="text-xs font-semibold text-red-800">
+                    Area Memerlukan Perhatian Khusus
+                  </p>
+                  <p className="text-xs text-red-600 mt-1">
+                    Tingkat malnutrisi dan penyakit menular tinggi di area ini
+                  </p>
+                </div>
               </div>
             </div>
           )}
