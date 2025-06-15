@@ -45,8 +45,8 @@ export interface FasilitasKesehatan {
   capacity: number;
 }
 export interface MapFilters {
-  kecamatanList: string; // ✅ Fleksibel
-  showAreaKritis: boolean; // ✅ Fleksibel
+  kecamatanList: string;
+  showAreaKritis: boolean;
   showAreaRentan: boolean;
   showAreaTerkelola: boolean;
   showPuskesmas: boolean;

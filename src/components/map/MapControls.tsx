@@ -2,12 +2,11 @@ import React from "react";
 import { Filter, MapPin, RefreshCw } from "lucide-react";
 import { Button } from "../ui/Button";
 
-import { kecamatanList } from "../../lib/mockData";
-
 interface MapControlsProps {
   onFilterChange?: (filters: MapFilters) => void;
   onReset?: () => void;
   onCenterMap?: () => void;
+  kecamatanList?: Array<{ id: string; nama: string }>;
 }
 
 export interface MapFilters {
@@ -34,6 +33,7 @@ const MapControls: React.FC<MapControlsProps> = ({
   onFilterChange,
   onReset,
   onCenterMap,
+  kecamatanList = [],
 }) => {
   const [isOpen, setIsOpen] = React.useState(false);
   const [filters, setFilters] = React.useState<MapFilters>(defaultFilters);
@@ -133,7 +133,7 @@ const MapControls: React.FC<MapControlsProps> = ({
                 />
                 <span className="ml-2 text-xs text-gray-700 flex items-center">
                   <span className="inline-block w-3 h-3 bg-red-500 rounded-full mr-2"></span>
-                  Area Rawan
+                  Area Kritis
                 </span>
               </label>
               <label className="flex items-center">
@@ -147,7 +147,7 @@ const MapControls: React.FC<MapControlsProps> = ({
                 />
                 <span className="ml-2 text-xs text-gray-700 flex items-center">
                   <span className="inline-block w-3 h-3 bg-yellow-500 rounded-full mr-2"></span>
-                  Area Perlu Diperhatikan
+                  Area Rentan
                 </span>
               </label>
               <label className="flex items-center">
@@ -161,7 +161,7 @@ const MapControls: React.FC<MapControlsProps> = ({
                 />
                 <span className="ml-2 text-xs text-gray-700 flex items-center">
                   <span className="inline-block w-3 h-3 bg-green-500 rounded-full mr-2"></span>
-                  Area Aman
+                  Area Terkelola
                 </span>
               </label>
             </div>
