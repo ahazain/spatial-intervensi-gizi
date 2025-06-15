@@ -18,7 +18,7 @@ import PublicLayout from "./components/layouts/PublicLayout";
 // Public Pages
 import HomePage from "./pages/public/HomePage";
 import PublicMapPage from "./pages/public/PublicMapPage";
-// import PublicStatsPage from "./pages/public/PublicStatsPage";
+import PublicStatsPage from "./pages/public/PublicStatsPage";
 
 // Protected Pages
 // import DashboardPage from "./pages/dashboard/DashboardPage";
@@ -65,7 +65,7 @@ function App() {
           <Route path="test-supabase" element={<Test />} />
           <Route index element={<HomePage />} />
           <Route path="map" element={<PublicMapPage />} />
-          {/* <Route path="statistics" element={<PublicStatsPage />} /> */}
+          <Route path="statistics" element={<PublicStatsPage />} />
         </Route>
 
         {/* auth routes */}
