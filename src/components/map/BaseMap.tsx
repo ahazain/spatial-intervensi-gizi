@@ -2,10 +2,6 @@ import React, { useEffect, useState } from "react";
 import { MapContainer, TileLayer, useMap, ZoomControl } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import KecamatanPolygon from "./KecamatanPolygon";
-import FacilityMarker from "./FacilityMarker";
-import { useKecamatanStore } from "../../stores/kecamatanStore";
-import { useFacilitiesStore } from "../../stores/facilitiesStore";
 
 import icon from "leaflet/dist/images/marker-icon.png";
 import iconShadow from "leaflet/dist/images/marker-shadow.png";
@@ -62,8 +58,6 @@ const BaseMap: React.FC<BaseMapProps> = ({
   style,
 }) => {
   const [mapReady, setMapReady] = useState(false);
-  const facilities = useFacilitiesStore((state) => state.facilities);
-  const kecamatanList = useKecamatanStore((state) => state.kecamatanList);
 
   return (
     <div className={className} style={style}>
@@ -80,30 +74,7 @@ const BaseMap: React.FC<BaseMapProps> = ({
         />
         <ZoomControl position="bottomright" />
 
-        {mapReady && (
-          <>
-            {/* Render Kecamatan Polygons dengan key unik */}
-            {kecamatanList.map((kecamatan, index) => (
-              <KecamatanPolygon
-                key={`kec-${kecamatan.id}-${index}`} // Kombinasi ID dan index
-                kecamatan={kecamatan}
-                onClick={(kec) => console.log("Clicked kecamatan:", kec.nama)}
-              />
-            ))}
-
-            {/* Render Facility Markers dengan key unik */}
-            {facilities.map((facility, index) => (
-              <FacilityMarker
-                key={`facility-${facility.id}-${index}`} // Kombinasi ID dan index
-                facility={facility}
-                onClick={(fac) => console.log("Clicked facility:", fac.nama)}
-              />
-            ))}
-
-            {/* Children lainnya */}
-            {children}
-          </>
-        )}
+        {mapReady && children}
 
         {flyTo && mapReady && <MapFlyTo position={flyTo} zoom={zoom} />}
       </MapContainer>

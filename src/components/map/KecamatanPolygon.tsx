@@ -5,11 +5,13 @@ import { KecamatanRingkasan } from "../../types";
 interface KecamatanPolygonProps {
   kecamatan: KecamatanRingkasan;
   onClick?: (kecamatan: KecamatanRingkasan) => void;
+  showPenyakitMenular: boolean;
 }
 
 const KecamatanPolygon: React.FC<KecamatanPolygonProps> = ({
   kecamatan,
   onClick,
+  showPenyakitMenular,
 }) => {
   const handleClick = () => {
     if (onClick) {
@@ -195,12 +197,15 @@ const KecamatanPolygon: React.FC<KecamatanPolygonProps> = ({
                   {kecamatan.jumlah_faskes}
                 </span>
               </div>
-              <div className="flex items-center justify-between col-span-2">
-                <span className="text-gray-600">Total Penyakit Menular:</span>
-                <span className="font-bold text-red-600">
-                  {kecamatan.total_penyakit} kasus
-                </span>
-              </div>
+              {/* Conditionally show penyakit menular based on showPenyakitMenular prop */}
+              {showPenyakitMenular && (
+                <div className="flex items-center justify-between col-span-2">
+                  <span className="text-gray-600">Total Penyakit Menular:</span>
+                  <span className="font-bold text-red-600">
+                    {kecamatan.total_penyakit} kasus
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
