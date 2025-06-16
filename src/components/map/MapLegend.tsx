@@ -20,7 +20,7 @@ const MapLegend: React.FC<MapLegendProps> = ({
   showPenyakitMenular,
 }) => {
   return (
-    <div className="absolute top-4 right-4 bg-white p-4 rounded-lg shadow-lg z-[1000] max-w-xs">
+    <div className="absolute bottom-4 left-4 bg-white p-4 rounded-lg shadow-lg z-[1000] max-w-xs">
       <h3 className="text-lg font-bold mb-3 text-gray-800">Keterangan Peta</h3>
 
       {/* Area Status Legend */}

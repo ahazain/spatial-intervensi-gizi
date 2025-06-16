@@ -51,7 +51,6 @@ export interface MapFilters {
   showAreaTerkelola: boolean;
   showPuskesmas: boolean;
   showPustu: boolean;
-  showPenyakitMenular: boolean;
 }
 
 //struktur data untuk view
