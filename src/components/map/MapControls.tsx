@@ -16,7 +16,6 @@ export interface MapFilters {
   showAreaTerkelola: boolean;
   showPuskesmas: boolean;
   showPustu: boolean;
-  showPenyakitMenular: boolean;
 }
 
 const defaultFilters: MapFilters = {
@@ -26,7 +25,6 @@ const defaultFilters: MapFilters = {
   showAreaTerkelola: true,
   showPuskesmas: true,
   showPustu: true,
-  showPenyakitMenular: false,
 };
 
 const MapControls: React.FC<MapControlsProps> = ({
@@ -65,9 +63,11 @@ const MapControls: React.FC<MapControlsProps> = ({
         <Button
           variant="primary"
           size="sm"
-          className="bg-white text-gray-600 border border-gray-300 shadow-sm hover:bg-gray-50"
+          className="bg-white text-black border border-gray-300 shadow-md hover:bg-green-500 hover:text-white focus:ring-2 focus:ring-green-400 focus:outline-none transition-colors duration-200 flex items-center gap-2"
           leftIcon={<Filter size={16} />}
           onClick={() => setIsOpen(!isOpen)}
+          aria-pressed={isOpen}
+          aria-label="Toggle filter options"
         >
           Filter
         </Button>
@@ -195,22 +195,6 @@ const MapControls: React.FC<MapControlsProps> = ({
                 <span className="ml-2 text-xs text-gray-700">Pustu</span>
               </label>
             </div>
-          </div>
-
-          <div className="mb-4">
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                className="h-4 w-4 text-purple-600 border-gray-300 rounded"
-                checked={filters.showPenyakitMenular}
-                onChange={(e) =>
-                  handleFilterChange("showPenyakitMenular", e.target.checked)
-                }
-              />
-              <span className="ml-2 text-xs text-gray-700">
-                Data Penyakit Menular
-              </span>
-            </label>
           </div>
 
           <div className="flex justify-end">
