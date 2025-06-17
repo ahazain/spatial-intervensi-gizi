@@ -80,3 +80,13 @@ export const updateBalita = async (
     throw new Error("Update gagal: data kosong setelah update.");
   }
 };
+export const deleteBalita = async (id: string): Promise<void> => {
+  const { error } = await supabase.from("balita").delete().eq("id", id);
+
+  if (error) {
+    console.error("Error deleting balita:", error.message);
+    throw error;
+  }
+
+  console.log(`Data balita dengan id ${id} berhasil dihapus.`);
+};

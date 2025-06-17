@@ -5,6 +5,7 @@ import {
   addBalita,
   updateBalita,
   getBalitaById,
+  deleteBalita,
 } from "../services/balitaService";
 
 interface ChildrenStore {
@@ -13,6 +14,7 @@ interface ChildrenStore {
   getChildById: (id: string) => Promise<Balita | null>;
   addChild: (child: Omit<Balita, "id">) => Promise<void>;
   updateChild: (id: string, updatedData: Partial<Balita>) => Promise<void>;
+  deleteChild: (id: string) => Promise<void>;
 
   initializeFromSupabase: () => Promise<void>;
 }
@@ -66,6 +68,19 @@ export const useChildrenStore = create<ChildrenStore>((set) => ({
       console.log("Store berhasil diupdate");
     } catch (err) {
       console.error("Gagal inisialisasi dari Supabase:", err);
+    }
+  },
+
+  deleteChild: async (id: string) => {
+    try {
+      await deleteBalita(id);
+      // Hapus dari state lokal
+      set((state) => ({
+        children: state.children.filter((child) => child.id !== id),
+      }));
+      console.log(`Balita dengan id ${id} berhasil dihapus dari store`);
+    } catch (error) {
+      console.error("Gagal menghapus balita:", error);
     }
   },
 }));
