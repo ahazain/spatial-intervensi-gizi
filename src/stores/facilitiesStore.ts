@@ -1,129 +1,73 @@
-import { create } from 'zustand';
-import { HealthFacility } from '../types';
-import { mockHealthFacilities } from '../lib/mockData';
+import { create } from "zustand";
+import { PopUpFailitasKesehatan, FasilitasKesehatan } from "../types";
+import {
+  getAllFasilitasBalita,
+  createFasilitasKesehatan,
+  updateFasilitasKesehatan,
+  getFasilitasById,
+} from "../services/fasilitesService";
 
-interface FacilitiesState {
-  facilities: HealthFacility[];
-  loading: boolean;
-  error: string | null;
-  
-  // Actions
-  fetchFacilities: () => Promise<void>;
-  addFacility: (facility: Omit<HealthFacility, 'id' | 'createdAt' | 'updatedAt'>) => Promise<HealthFacility>;
-  updateFacility: (id: string, data: Partial<Omit<HealthFacility, 'id' | 'createdAt' | 'updatedAt'>>) => Promise<HealthFacility>;
-  deleteFacility: (id: string) => Promise<boolean>;
-  getFacilityById: (id: string) => HealthFacility | undefined;
-  getFacilitiesByDistrict: (district: string) => HealthFacility[];
-  getFacilitiesByType: (type: 'puskesmas' | 'pustu') => HealthFacility[];
+interface FacilitiesStore {
+  facilities: PopUpFailitasKesehatan[];
+  selectedFacility: FasilitasKesehatan | null;
+  initializeFromSupabase: () => Promise<void>;
+  addFacility: (fasilitas: Omit<FasilitasKesehatan, "id">) => Promise<void>;
+  updateFacility: (
+    id: string,
+    data: Partial<Omit<FasilitasKesehatan, "id">>
+  ) => Promise<void>;
+  getFacilityById: (id: string) => Promise<void>;
 }
 
-export const useFacilitiesStore = create<FacilitiesState>((set, get) => ({
+export const useFacilitiesStore = create<FacilitiesStore>((set) => ({
   facilities: [],
-  loading: false,
-  error: null,
+  selectedFacility: null,
 
-  fetchFacilities: async () => {
-    set({ loading: true, error: null });
+  addFacility: async (fasilitas) => {
     try {
-      // In a real app, this would be an API call
-      // Using timeout to simulate network latency
-      await new Promise(resolve => setTimeout(resolve, 500));
-      set({ facilities: mockHealthFacilities, loading: false });
-    } catch (error) {
-      set({ error: 'Failed to fetch facilities data', loading: false });
+      await createFasilitasKesehatan(fasilitas);
+      // Refresh list setelah tambah data baru
+      const data = await getAllFasilitasBalita();
+      set({ facilities: data });
+    } catch (err) {
+      console.error("Gagal menambahkan fasilitas:", err);
     }
   },
-
-  addFacility: async (facilityData) => {
-    set({ loading: true, error: null });
+  getFacilityById: async (id) => {
     try {
-      // In a real app, this would be an API call
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const newFacility: HealthFacility = {
-        ...facilityData,
-        id: `facility-${Date.now()}`,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      
-      set(state => ({ 
-        facilities: [...state.facilities, newFacility],
-        loading: false
-      }));
-      
-      return newFacility;
-    } catch (error) {
-      set({ error: 'Failed to add facility', loading: false });
-      throw error;
-    }
-  },
-
-  updateFacility: async (id, data) => {
-    set({ loading: true, error: null });
-    try {
-      // In a real app, this would be an API call
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      let updatedFacility: HealthFacility | undefined;
-      
-      set(state => {
-        const updatedFacilities = state.facilities.map(facility => {
-          if (facility.id === id) {
-            updatedFacility = {
-              ...facility,
-              ...data,
-              updatedAt: new Date().toISOString()
-            };
-            return updatedFacility;
-          }
-          return facility;
-        });
-        
-        return {
-          facilities: updatedFacilities,
-          loading: false
-        };
-      });
-      
-      if (!updatedFacility) {
-        throw new Error('Facility not found');
+      const detail = await getFasilitasById(id);
+      if (detail) {
+        set({ selectedFacility: detail });
+      } else {
+        set({ selectedFacility: null });
       }
-      
-      return updatedFacility;
-    } catch (error) {
-      set({ error: 'Failed to update facility', loading: false });
-      throw error;
+    } catch (err) {
+      console.error("Gagal mengambil data fasilitas berdasarkan ID:", err);
+      set({ selectedFacility: null });
     }
   },
-
-  deleteFacility: async (id) => {
-    set({ loading: true, error: null });
+  updateFacility: async (id, data) => {
     try {
-      // In a real app, this would be an API call
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      set(state => ({
-        facilities: state.facilities.filter(facility => facility.id !== id),
-        loading: false
-      }));
-      
-      return true;
-    } catch (error) {
-      set({ error: 'Failed to delete facility', loading: false });
-      return false;
+      await updateFasilitasKesehatan(id, data);
+      const updatedList = await getAllFasilitasBalita();
+      set({ facilities: updatedList });
+    } catch (err) {
+      console.error("Gagal mengupdate fasilitas:", err);
     }
   },
+  initializeFromSupabase: async () => {
+    console.log("Mulai inisialisasi fasilitas dari Supabase...");
+    try {
+      const data = await getAllFasilitasBalita();
+      console.log("Data fasilitas berhasil diambil dari Supabase:", data);
+      console.log("Jumlah data fasilitas:", data?.length);
 
-  getFacilityById: (id) => {
-    return get().facilities.find(facility => facility.id === id);
+      set({ facilities: data });
+
+      console.log("Facilities store berhasil diupdate");
+    } catch (err) {
+      console.error("Gagal inisialisasi fasilitas dari Supabase:", err);
+      set({ facilities: [] });
+    }
   },
-
-  getFacilitiesByDistrict: (district) => {
-    return get().facilities.filter(facility => facility.district === district);
-  },
-
-  getFacilitiesByType: (type) => {
-    return get().facilities.filter(facility => facility.type === type);
-  }
 }));

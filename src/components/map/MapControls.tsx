@@ -1,54 +1,52 @@
-import React from 'react';
-import { Filter, MapPin, RefreshCw } from 'lucide-react';
-import { Button } from '../ui/Button';
-import { useChildrenStore } from '../../stores/childrenStore';
-import { useFacilitiesStore } from '../../stores/facilitiesStore';
-import { districts } from '../../lib/mockData';
+import React from "react";
+import { Filter, MapPin, RefreshCw } from "lucide-react";
+import { Button } from "../ui/Button";
 
 interface MapControlsProps {
   onFilterChange?: (filters: MapFilters) => void;
   onReset?: () => void;
   onCenterMap?: () => void;
+  kecamatanList?: Array<{ id: string; nama: string }>;
 }
 
 export interface MapFilters {
-  district: string;
-  showNormal: boolean;
-  showUnderweight: boolean;
-  showSeverelyUnderweight: boolean;
-  showStunting: boolean;
+  kecamatanList: string;
+  showAreaKritis: boolean;
+  showAreaRentan: boolean;
+  showAreaTerkelola: boolean;
   showPuskesmas: boolean;
   showPustu: boolean;
-  showBuffers: boolean;
 }
 
 const defaultFilters: MapFilters = {
-  district: 'all',
-  showNormal: true,
-  showUnderweight: true,
-  showSeverelyUnderweight: true,
-  showStunting: true,
+  kecamatanList: "all",
+  showAreaKritis: true,
+  showAreaRentan: true,
+  showAreaTerkelola: true,
   showPuskesmas: true,
   showPustu: true,
-  showBuffers: false,
 };
 
-const MapControls: React.FC<MapControlsProps> = ({ 
-  onFilterChange, 
+const MapControls: React.FC<MapControlsProps> = ({
+  onFilterChange,
   onReset,
-  onCenterMap
+  onCenterMap,
+  kecamatanList = [],
 }) => {
   const [isOpen, setIsOpen] = React.useState(false);
   const [filters, setFilters] = React.useState<MapFilters>(defaultFilters);
-  
-  const handleFilterChange = (key: keyof MapFilters, value: any) => {
+
+  const handleFilterChange = (
+    key: keyof MapFilters,
+    value: boolean | string
+  ) => {
     const updatedFilters = { ...filters, [key]: value };
     setFilters(updatedFilters);
     if (onFilterChange) {
       onFilterChange(updatedFilters);
     }
   };
-  
+
   const handleReset = () => {
     setFilters(defaultFilters);
     if (onFilterChange) {
@@ -58,22 +56,24 @@ const MapControls: React.FC<MapControlsProps> = ({
       onReset();
     }
   };
-  
+
   return (
     <div className="absolute top-4 right-4 z-[1000]">
       <div className="flex space-x-2">
-        <Button 
-          variant="primary" 
-          size="sm" 
-          className="bg-white text-gray-600 border border-gray-300 shadow-sm hover:bg-gray-50"
+        <Button
+          variant="primary"
+          size="sm"
+          className="bg-white text-black border border-gray-300 shadow-md hover:bg-green-500 hover:text-white focus:ring-2 focus:ring-green-400 focus:outline-none transition-colors duration-200 flex items-center gap-2"
           leftIcon={<Filter size={16} />}
           onClick={() => setIsOpen(!isOpen)}
+          aria-pressed={isOpen}
+          aria-label="Toggle filter options"
         >
           Filter
         </Button>
-        
-        <Button 
-          variant="outline" 
+
+        <Button
+          variant="outline"
           size="sm"
           className="bg-white shadow-sm"
           leftIcon={<MapPin size={16} />}
@@ -81,9 +81,9 @@ const MapControls: React.FC<MapControlsProps> = ({
         >
           Center
         </Button>
-        
-        <Button 
-          variant="outline" 
+
+        <Button
+          variant="outline"
           size="sm"
           className="bg-white shadow-sm"
           leftIcon={<RefreshCw size={16} />}
@@ -92,71 +92,81 @@ const MapControls: React.FC<MapControlsProps> = ({
           Reset
         </Button>
       </div>
-      
+
       {isOpen && (
-        <div className="mt-2 p-4 bg-white rounded-lg shadow-lg border border-gray-200 w-64">
+        <div className="mt-2 p-4 bg-white rounded-lg shadow-lg border border-gray-200 w-72">
           <h3 className="text-sm font-semibold mb-3">Filter Data</h3>
-          
+
           <div className="mb-4">
             <label className="block text-xs font-medium text-gray-700 mb-1">
               Kecamatan
             </label>
             <select
               className="w-full p-2 text-sm border border-gray-300 rounded-md"
-              value={filters.district}
-              onChange={(e) => handleFilterChange('district', e.target.value)}
+              value={filters.kecamatanList}
+              onChange={(e) =>
+                handleFilterChange("kecamatanList", e.target.value)
+              }
             >
               <option value="all">Semua Kecamatan</option>
-              {districts.map(district => (
-                <option key={district} value={district}>{district}</option>
+              {kecamatanList.map((kecamatan) => (
+                <option key={kecamatan.id} value={kecamatan.id}>
+                  {kecamatan.nama}
+                </option>
               ))}
             </select>
           </div>
-          
+
           <div className="mb-4">
             <p className="block text-xs font-medium text-gray-700 mb-1">
-              Status Gizi
+              Area Risiko Gizi
             </p>
             <div className="space-y-2">
               <label className="flex items-center">
                 <input
                   type="checkbox"
-                  className="h-4 w-4 text-teal-600 border-gray-300 rounded"
-                  checked={filters.showNormal}
-                  onChange={(e) => handleFilterChange('showNormal', e.target.checked)}
+                  className="h-4 w-4 text-red-600 border-gray-300 rounded"
+                  checked={filters.showAreaKritis}
+                  onChange={(e) =>
+                    handleFilterChange("showAreaKritis", e.target.checked)
+                  }
                 />
-                <span className="ml-2 text-xs text-gray-700">Normal</span>
+                <span className="ml-2 text-xs text-gray-700 flex items-center">
+                  <span className="inline-block w-3 h-3 bg-red-500 rounded-full mr-2"></span>
+                  Area Kritis
+                </span>
               </label>
               <label className="flex items-center">
                 <input
                   type="checkbox"
-                  className="h-4 w-4 text-teal-600 border-gray-300 rounded"
-                  checked={filters.showUnderweight}
-                  onChange={(e) => handleFilterChange('showUnderweight', e.target.checked)}
+                  className="h-4 w-4 text-yellow-600 border-gray-300 rounded"
+                  checked={filters.showAreaRentan}
+                  onChange={(e) =>
+                    handleFilterChange("showAreaRentan", e.target.checked)
+                  }
                 />
-                <span className="ml-2 text-xs text-gray-700">Gizi Kurang</span>
+                <span className="ml-2 text-xs text-gray-700 flex items-center">
+                  <span className="inline-block w-3 h-3 bg-yellow-500 rounded-full mr-2"></span>
+                  Area Rentan
+                </span>
               </label>
               <label className="flex items-center">
                 <input
                   type="checkbox"
-                  className="h-4 w-4 text-teal-600 border-gray-300 rounded"
-                  checked={filters.showSeverelyUnderweight}
-                  onChange={(e) => handleFilterChange('showSeverelyUnderweight', e.target.checked)}
+                  className="h-4 w-4 text-green-600 border-gray-300 rounded"
+                  checked={filters.showAreaTerkelola}
+                  onChange={(e) =>
+                    handleFilterChange("showAreaTerkelola", e.target.checked)
+                  }
                 />
-                <span className="ml-2 text-xs text-gray-700">Gizi Buruk</span>
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  className="h-4 w-4 text-teal-600 border-gray-300 rounded"
-                  checked={filters.showStunting}
-                  onChange={(e) => handleFilterChange('showStunting', e.target.checked)}
-                />
-                <span className="ml-2 text-xs text-gray-700">Stunting</span>
+                <span className="ml-2 text-xs text-gray-700 flex items-center">
+                  <span className="inline-block w-3 h-3 bg-green-500 rounded-full mr-2"></span>
+                  Area Terkelola
+                </span>
               </label>
             </div>
           </div>
-          
+
           <div className="mb-4">
             <p className="block text-xs font-medium text-gray-700 mb-1">
               Fasilitas Kesehatan
@@ -167,7 +177,9 @@ const MapControls: React.FC<MapControlsProps> = ({
                   type="checkbox"
                   className="h-4 w-4 text-teal-600 border-gray-300 rounded"
                   checked={filters.showPuskesmas}
-                  onChange={(e) => handleFilterChange('showPuskesmas', e.target.checked)}
+                  onChange={(e) =>
+                    handleFilterChange("showPuskesmas", e.target.checked)
+                  }
                 />
                 <span className="ml-2 text-xs text-gray-700">Puskesmas</span>
               </label>
@@ -176,27 +188,21 @@ const MapControls: React.FC<MapControlsProps> = ({
                   type="checkbox"
                   className="h-4 w-4 text-teal-600 border-gray-300 rounded"
                   checked={filters.showPustu}
-                  onChange={(e) => handleFilterChange('showPustu', e.target.checked)}
+                  onChange={(e) =>
+                    handleFilterChange("showPustu", e.target.checked)
+                  }
                 />
                 <span className="ml-2 text-xs text-gray-700">Pustu</span>
               </label>
             </div>
           </div>
 
-          <div className="mb-4">
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                className="h-4 w-4 text-teal-600 border-gray-300 rounded"
-                checked={filters.showBuffers}
-                onChange={(e) => handleFilterChange('showBuffers', e.target.checked)}
-              />
-              <span className="ml-2 text-xs text-gray-700">Tampilkan Buffer 1km</span>
-            </label>
-          </div>
-          
           <div className="flex justify-end">
-            <Button variant="outline" size="sm" onClick={() => setIsOpen(false)}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsOpen(false)}
+            >
               Tutup
             </Button>
           </div>

@@ -1,80 +1,76 @@
-import React, { useState } from 'react';
-import { useFacilitiesStore } from '../../stores/facilitiesStore';
-import { useAuthStore, usePermissions } from '../../stores/authStore';
-import { DataTable } from '../../components/ui/DataTable';
-import { Button, ButtonLink } from '../../components/ui/Button';
-import PageHeader from '../../components/ui/PageHeader';
-import { HealthFacility } from '../../types';
-import { Plus, Edit2, Trash2, Search } from 'lucide-react';
+import React, { useState } from "react";
+import { useFacilitiesStore } from "../../stores/facilitiesStore";
+import { DataTable } from "../../components/ui/DataTable";
+import { ButtonLink } from "../../components/ui/Button";
+import PageHeader from "../../components/ui/PageHeader";
+import { PopUpFailitasKesehatan } from "../../types";
+import { Plus, Edit2, Search } from "lucide-react";
 
 const FacilitiesPage: React.FC = () => {
-  const { facilities, deleteFacility } = useFacilitiesStore();
-  const { user } = useAuthStore();
-  const permissions = usePermissions();
-  const [searchTerm, setSearchTerm] = useState('');
-  
-  // Filter facilities based on officer's district
-  const filteredByDistrict = user?.role === 'officer' && user.district 
-    ? facilities.filter(facility => facility.district === user.district)
-    : facilities;
-  
-  // Filter by search term (name or district)
-  const filteredFacilities = filteredByDistrict.filter(facility => 
-    facility.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    facility.district.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const { facilities } = useFacilitiesStore();
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Apakah Anda yakin ingin menghapus data fasilitas kesehatan ini?')) {
-      await deleteFacility(id);
-    }
-  };
+  const filteredFacilities = facilities.filter((facility) => {
+    // Pastikan nilai tidak null/undefined sebelum memanggil toLowerCase()
+    const facilityName = facility.fasilitas_nama?.toLowerCase() || "";
+    const kecamatanName = facility.kecamatan_nama?.toLowerCase() || "";
+    const searchLower = searchTerm.toLowerCase();
+
+    return (
+      facilityName.includes(searchLower) || kecamatanName.includes(searchLower)
+    );
+  });
 
   const columns = [
     {
-      header: 'Nama Fasilitas',
-      accessor: 'name',
+      header: "Nama Fasilitas",
+      accessor: (facility: PopUpFailitasKesehatan) => facility.fasilitas_nama,
     },
     {
-      header: 'Tipe',
-      accessor: (facility: HealthFacility) => 
-        facility.type === 'puskesmas' ? 'Puskesmas' : 'Pustu',
-      className: 'w-32'
+      header: "Tipe",
+      accessor: (facility: PopUpFailitasKesehatan) =>
+        facility.type === "puskesmas"
+          ? "Puskesmas"
+          : facility.type === "pustu"
+          ? "Pustu"
+          : "Rumah Sakit",
+      className: "w-32",
     },
     {
-      header: 'Kecamatan',
-      accessor: 'district',
+      header: "Kecamatan",
+      accessor: (facility: PopUpFailitasKesehatan) => {
+        console.log("facility kecamatan:", facility.kecamatan?.nama);
+        return facility.kecamatan_nama;
+      },
     },
     {
-      header: 'Kapasitas',
-      accessor: 'capacity',
-      className: 'w-28'
+      header: "Kapasitas",
+      accessor: (facility: PopUpFailitasKesehatan) => facility.capacity,
+      className: "w-28",
     },
     {
-      header: 'Diperbarui',
-      accessor: (facility: HealthFacility) => new Date(facility.updatedAt).toLocaleDateString('id-ID'),
-      className: 'w-32'
+      header: "Total Balita",
+      accessor: (facility: PopUpFailitasKesehatan) => facility.total_balita,
+      className: "w-28",
     },
   ];
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <PageHeader 
-        title="Fasilitas Kesehatan" 
-        description={`Manajemen data fasilitas kesehatan ${user?.district ? `di kecamatan ${user.district}` : ''}`}
+      <PageHeader
+        title="Fasilitas Kesehatan"
+        description="Manajemen data fasilitas kesehatan"
         actions={
-          permissions.canAddFacility ? (
-            <ButtonLink
-              to="/dashboard/facilities/add"
-              variant="primary"
-              leftIcon={<Plus size={16} />}
-            >
-              Tambah Fasilitas
-            </ButtonLink>
-          ) : undefined
+          <ButtonLink
+            to="/dashboard/facilities/add"
+            variant="primary"
+            leftIcon={<Plus size={16} />}
+          >
+            Tambah Fasilitas
+          </ButtonLink>
         }
       />
-      
+
       <div className="mt-6 bg-white rounded-lg shadow overflow-hidden">
         <div className="p-4 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-3 sm:space-y-0">
           <div className="w-full sm:w-80">
@@ -95,42 +91,28 @@ const FacilitiesPage: React.FC = () => {
               />
             </div>
           </div>
-          
+
           <div className="text-sm text-gray-500">
             Total: {filteredFacilities.length} fasilitas
           </div>
         </div>
-        
-        <DataTable<HealthFacility>
+
+        <DataTable<PopUpFailitasKesehatan>
           columns={columns}
           data={filteredFacilities}
-          keyField="id"
-          actions={permissions.canEditFacility || permissions.canDeleteFacility ? (facility) => (
+          keyField="fasilitas_id"
+          actions={(facility) => (
             <div className="flex justify-end space-x-2">
-              {permissions.canEditFacility && (
-                <ButtonLink
-                  to={`/dashboard/facilities/edit/${facility.id}`}
-                  variant="ghost"
-                  size="sm"
-                  leftIcon={<Edit2 size={16} />}
-                >
-                  Edit
-                </ButtonLink>
-              )}
-              
-              {permissions.canDeleteFacility && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  leftIcon={<Trash2 size={16} className="text-red-500" />}
-                  className="text-red-500 hover:bg-red-50"
-                  onClick={() => handleDelete(facility.id)}
-                >
-                  Hapus
-                </Button>
-              )}
+              <ButtonLink
+                to={`/dashboard/facilities/edit/${facility.fasilitas_id}`}
+                variant="ghost"
+                size="sm"
+                leftIcon={<Edit2 size={16} />}
+              >
+                Edit
+              </ButtonLink>
             </div>
-          ) : undefined}
+          )}
         />
       </div>
     </div>

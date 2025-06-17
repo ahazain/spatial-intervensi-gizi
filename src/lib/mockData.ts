@@ -1,101 +1,284 @@
-import { Child, District, HealthFacility, User } from '../types';
+import {
+  Kecamatan,
+  FasilitasKesehatan,
+  Balita,
+  PenyakitMenular,
+} from "../types";
 
-// Mock users data
-export const mockUsers: User[] = [
+// Mock data untuk Kecamatan dengan polygon coordinates
+export const kecamatanList: Kecamatan[] = [
   {
-    id: '1',
-    name: 'Admin User',
-    email: 'admin@surabaya.go.id',
-    role: 'admin',
+    id: "kec-001",
+    nama: "Sukolilo",
+    area_kategori: "rawan",
+    area: {
+      type: "Polygon",
+      coordinates: [
+        [
+          [112.666146129000026, -7.197353650999958],
+          [112.666205615000081, -7.197460726999964],
+          [112.666372177000085, -7.197460726999964],
+          [112.66649115000007, -7.197329856999943],
+          [112.66649115000007, -7.19702052699995],
+          [112.666514945000017, -7.196794477999958],
+          [112.66662202100008, -7.196723093999935],
+          [112.666788583000084, -7.196734991999961],
+          [112.666871864000086, -7.196770682999954],
+          [112.666693405000046, -7.197115704999931],
+          [112.666503048000095, -7.197734364999974],
+          [112.666300794000108, -7.198031797999931],
+          [112.666110437000043, -7.198091283999929],
+          [112.665860593000048, -7.198103181999954],
+          [112.665622647000077, -7.197996105999948],
+          [112.665230036000025, -7.197793851999961],
+          [112.664992090000055, -7.197555905999934],
+          [112.664806407000015, -7.197352283999976],
+          [112.664720841000076, -7.197258451999971],
+          [112.664653024000017, -7.197174572999927],
+          [112.664553087000058, -7.196974697999963],
+          [112.664494195000088, -7.196792668999933],
+          [112.664457672000026, -7.196679781999933],
+          [112.664435303, -7.19661064099995],
+          [112.664414724000039, -7.196483915999977],
+          [112.664367489000028, -7.196193044999973],
+          [112.66434579700001, -7.195837462999975],
+          [112.664344925000023, -7.195823175999976],
+          [112.664337151000041, -7.195695737999927],
+          [112.664354950000074, -7.19542595799993],
+          [112.664361929000052, -7.195320169999945],
+          [112.664359718000014, -7.195284707999974],
+          [112.664357507000091, -7.195249245999946],
+          [112.664359842000067, -7.195221355999934],
+          [112.664378782000085, -7.194995123999945],
+          [112.664416268000082, -7.194547350999926],
+          [112.66441743300004, -7.194498421999981],
+          [112.664419657000053, -7.194405017999941],
+          [112.664425191000078, -7.194172584999933],
+          [112.664392072000055, -7.194014785999968],
+          [112.664374627000029, -7.19393166499998],
+          [112.664356700000098, -7.193901656999969],
+          [112.664237808000053, -7.193702641999948],
+          [112.664133858000014, -7.193571232999943],
+          [112.664080169000044, -7.193503361999944],
+          [112.663874940000028, -7.193315978999976],
+          [112.663691540000059, -7.193191369999965],
+          [112.663672802000065, -7.193150046999961],
+          [112.663677872000108, -7.193087053999932],
+          [112.663914371000033, -7.192854902999954],
+          [112.664102723000042, -7.19267001299994],
+          [112.664143698000089, -7.19262533999995],
+          [112.664161812000089, -7.19260559099996],
+          [112.664324539000063, -7.192428173999929],
+          [112.664442442000109, -7.192316902999949],
+          [112.664724408000097, -7.192149150999967],
+          [112.664833269000042, -7.192117027999927],
+          [112.665318671000023, -7.191866911999966],
+          [112.665461439000069, -7.191795527999943],
+          [112.665647037000099, -7.191752697999959],
+          [112.665746974000058, -7.191781250999952],
+          [112.665818358000024, -7.19190974199995],
+          [112.665846911000017, -7.192109616999971],
+          [112.665875465000113, -7.192338044999929],
+          [112.665975402000072, -7.19253791999995],
+          [112.665875465000113, -7.192595026999925],
+          [112.665775527000051, -7.192666410999948],
+          [112.665746974000058, -7.192737793999981],
+          [112.665804081000033, -7.192880561999971],
+          [112.665875465000113, -7.193051882999953],
+          [112.665918295000097, -7.193337418999931],
+          [112.665915784000049, -7.193570569999963],
+          [112.665950049000116, -7.19370387999993],
+          [112.66595132100008, -7.193708827999956],
+          [112.666003039000088, -7.193910035999977],
+          [112.666004332000057, -7.193952427999932],
+          [112.666008996000073, -7.194105351999951],
+          [112.666003372000091, -7.194217711999954],
+          [112.665991990000066, -7.194445133999977],
+          [112.665972619000058, -7.194522245999963],
+          [112.665966523000066, -7.194546512999977],
+          [112.665958724, -7.194749228999967],
+          [112.665955783000072, -7.194881976999966],
+          [112.666020985000046, -7.194956795999929],
+          [112.666045343000064, -7.195067767999944],
+          [112.666007904000026, -7.195215529999928],
+          [112.66600475000007, -7.195341301999974],
+          [112.666006573000118, -7.195401070999935],
+          [112.66600943100002, -7.195494764999978],
+          [112.666009920000079, -7.195495861999973],
+          [112.666038898000011, -7.195560880999949],
+          [112.666076974000021, -7.195646314999976],
+          [112.666101333000029, -7.195757285999946],
+          [112.666063469000051, -7.195891096999958],
+          [112.666045920000101, -7.196003343999962],
+          [112.66604911200011, -7.19610797699994],
+          [112.666033692000042, -7.196289978999971],
+          [112.666033662000018, -7.196290512999951],
+          [112.666024617000062, -7.19645084299998],
+          [112.666016959000103, -7.196473786999945],
+          [112.666158026000062, -7.196532736999927],
+          [112.666205615000081, -7.196616017999929],
+          [112.666217512000117, -7.196723093999935],
+          [112.66618182000002, -7.19687775899996],
+          [112.666205615000081, -7.197091910999973],
+          [112.666146129000026, -7.197353650999958],
+        ],
+      ],
+    },
   },
   {
-    id: '2',
-    name: 'Petugas Gizi Sukomanunggal',
-    email: 'petugas@surabaya.go.id',
-    role: 'officer',
-    district: 'Sukomanunggal',
+    id: "kec-002",
+    nama: "Gubeng",
+    area_kategori: "Rentan",
+    area: {
+      type: "Polygon",
+      coordinates: [
+        [
+          [112.74, -7.26],
+          [112.75, -7.26],
+          [112.75, -7.25],
+          [112.745, -7.245],
+          [112.74, -7.25],
+          [112.74, -7.26],
+        ],
+      ],
+    },
+  },
+
+  {
+    id: "kec-00r",
+    nama: "Wonokromo",
+    area_kategori: "Terkelola",
+    area: {
+      type: "Polygon",
+      coordinates: [
+        [
+          [112.72, -7.29],
+          [112.73, -7.29],
+          [112.73, -7.28],
+          [112.725, -7.275],
+          [112.72, -7.28],
+          [112.72, -7.29],
+        ],
+      ],
+    },
   },
 ];
 
-// Surabaya's approximate center coordinates
-const surabayaCenter: [number, number] = [-7.2575, 112.7521];
-
-// Helper to generate random coordinates around Surabaya
-const getRandomCoordinate = (centerLat: number, centerLng: number, radiusKm = 10): [number, number] => {
-  // Convert radius from km to degrees
-  const radiusLat = radiusKm / 111;
-  const radiusLng = radiusKm / (111 * Math.cos(centerLat * Math.PI / 180));
-  
-  const randomLat = centerLat + (Math.random() * 2 - 1) * radiusLat;
-  const randomLng = centerLng + (Math.random() * 2 - 1) * radiusLng;
-  
-  return [randomLat, randomLng];
-};
-
-// Surabaya districts
-export const districts = [
-  'Sukomanunggal', 'Tandes', 'Asemrowo', 'Benowo', 'Pakal', 
-  'Lakarsantri', 'Sambikerep', 'Genteng', 'Tegalsari', 'Bubutan',
-  'Simokerto', 'Pabean Cantian', 'Semampir', 'Krembangan', 'Bulak',
-  'Kenjeran', 'Tambaksari', 'Gubeng', 'Rungkut', 'Tenggilis Mejoyo',
-  'Gunung Anyar', 'Sukolilo', 'Mulyorejo', 'Sawahan', 'Wonokromo',
-  'Karangpilang', 'Dukuh Pakis', 'Wiyung', 'Gayungan', 'Wonocolo', 'Jambangan'
+export const fasilitasKesehatanList: FasilitasKesehatan[] = [
+  {
+    id: "fk-001",
+    nama: "Puskesmas Sukolilo",
+    type: "puskesmas",
+    Kecamatan_id: "kec-001",
+    capacity: 100,
+    lokasi: {
+      type: "Point",
+      coordinates: [112.785, -7.275],
+    },
+  },
+  {
+    id: "fk-002",
+    nama: "Pustu Keputih",
+    type: "pustu",
+    Kecamatan_id: "kec-001",
+    capacity: 50,
+    lokasi: {
+      type: "Point",
+      coordinates: [112.782, -7.272],
+    },
+  },
+  {
+    id: "fk-003",
+    nama: "Puskesmas Gubeng",
+    type: "puskesmas",
+    Kecamatan_id: "kec-002",
+    capacity: 120,
+    lokasi: {
+      type: "Point",
+      coordinates: [112.745, -7.255],
+    },
+  },
+  {
+    id: "fk-004",
+    nama: "Pustu Airlangga",
+    type: "pustu",
+    Kecamatan_id: "kec-002",
+    capacity: 40,
+    lokasi: {
+      type: "Point",
+      coordinates: [112.748, -7.252],
+    },
+  },
 ];
 
-// Generate mock children data
-export const mockChildren: Child[] = Array.from({ length: 200 }, (_, i) => {
-  const nutritionStatuses: NutritionStatus[] = ['normal', 'underweight', 'severely_underweight', 'stunting'];
-  const randomStatus = nutritionStatuses[Math.floor(Math.random() * nutritionStatuses.length)];
-  const randomDistrict = districts[Math.floor(Math.random() * districts.length)];
-  
-  return {
-    id: `child-${i + 1}`,
-    name: `Anak ${i + 1}`,
-    age: Math.floor(Math.random() * 60), // 0-60 months
-    nutritionStatus: randomStatus,
-    district: randomDistrict,
-    coordinates: getRandomCoordinate(surabayaCenter[0], surabayaCenter[1]),
-    createdAt: new Date(Date.now() - Math.random() * 31536000000).toISOString(), // Random date in the last year
-    updatedAt: new Date().toISOString(),
-  };
-});
+export const balitaList: Balita[] = [
+  {
+    id: "bl-001",
+    nama: "Ahmad Rizki",
+    status_nutrisi: "normal",
+    fasilitas_kesehatan_id: "fk-001",
+  },
+  {
+    id: "bl-002",
+    nama: "Siti Nurhaliza",
+    status_nutrisi: "kurang",
+    fasilitas_kesehatan_id: "fk-001",
+  },
+  {
+    id: "bl-003",
+    nama: "Budi Santoso",
+    status_nutrisi: "buruk",
+    fasilitas_kesehatan_id: "fk-002",
+  },
+  {
+    id: "bl-004",
+    nama: "Aisyah Putri",
+    status_nutrisi: "stunting",
+    fasilitas_kesehatan_id: "fk-002",
+  },
+  {
+    id: "bl-005",
+    nama: "Doni Prasetyo",
+    status_nutrisi: "normal",
+    fasilitas_kesehatan_id: "fk-003",
+  },
+  {
+    id: "bl-006",
+    nama: "Maya Sari",
+    status_nutrisi: "kurang",
+    fasilitas_kesehatan_id: "fk-003",
+  },
+  {
+    id: "bl-007",
+    nama: "Fajar Ramadhan",
+    status_nutrisi: "normal",
+    fasilitas_kesehatan_id: "fk-004",
+  },
+  {
+    id: "bl-008",
+    nama: "Indira Kusuma",
+    status_nutrisi: "normal",
+    fasilitas_kesehatan_id: "fk-005",
+  },
+];
 
-// Generate mock health facilities data
-export const mockHealthFacilities: HealthFacility[] = Array.from({ length: 40 }, (_, i) => {
-  const types: ('puskesmas' | 'pustu')[] = ['puskesmas', 'pustu'];
-  const randomType = types[Math.floor(Math.random() * types.length)];
-  const randomDistrict = districts[Math.floor(Math.random() * districts.length)];
-  
-  return {
-    id: `facility-${i + 1}`,
-    name: `${randomType === 'puskesmas' ? 'Puskesmas' : 'Pustu'} ${randomDistrict} ${i + 1}`,
-    type: randomType,
-    district: randomDistrict,
-    coordinates: getRandomCoordinate(surabayaCenter[0], surabayaCenter[1]),
-    capacity: Math.floor(Math.random() * 100) + 50, // 50-150 capacity
-    createdAt: new Date(Date.now() - Math.random() * 31536000000).toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-});
-
-// Generate district statistics based on mock children
-export const mockDistrictStats: District[] = districts.map(districtName => {
-  const childrenInDistrict = mockChildren.filter(child => child.district === districtName);
-  
-  const normal = childrenInDistrict.filter(c => c.nutritionStatus === 'normal').length;
-  const underweight = childrenInDistrict.filter(c => c.nutritionStatus === 'underweight').length;
-  const severely_underweight = childrenInDistrict.filter(c => c.nutritionStatus === 'severely_underweight').length;
-  const stunting = childrenInDistrict.filter(c => c.nutritionStatus === 'stunting').length;
-  
-  return {
-    id: districtName.toLowerCase().replace(/\s/g, '-'),
-    name: districtName,
-    totalChildren: childrenInDistrict.length,
-    nutritionCases: {
-      normal,
-      underweight,
-      severely_underweight,
-      stunting,
-    }
-  };
-});
+export const penyakitMenularList: PenyakitMenular[] = [
+  {
+    id: "pm-001",
+    nama: "difteri",
+    jumlah: 5,
+    kecamatan_id: "kec-001",
+  },
+  {
+    id: "pm-002",
+    nama: "pertusis",
+    jumlah: 3,
+    kecamatan_id: "kec-001",
+  },
+  {
+    id: "pm-003",
+    nama: "hepatitis B",
+    jumlah: 2,
+    kecamatan_id: "kec-002",
+  },
+];

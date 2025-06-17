@@ -1,67 +1,39 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { LogIn, AlertTriangle } from 'lucide-react';
-import { useAuthStore } from '../../stores/authStore';
-import { Button } from '../../components/ui/Button';
-import Logo from '../../components/ui/Logo';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { LogIn, AlertTriangle } from "lucide-react";
+import { useAuthStore } from "../../stores/authStore";
+import { Button } from "../../components/ui/Button";
+import Logo from "../../components/ui/Logo";
 
 const LoginPage: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const { login } = useAuthStore();
   const navigate = useNavigate();
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setIsLoading(true);
-    
+
     try {
-      // Demo login credentials
-      if (email === '') {
-        throw new Error('Email wajib diisi');
+      if (email === "") {
+        throw new Error("Email wajib diisi");
       }
-      
-      if (password === '') {
-        throw new Error('Password wajib diisi');
+
+      if (password === "") {
+        throw new Error("Password wajib diisi");
       }
-      
+
       const success = await login(email, password);
-      
+
       if (success) {
-        navigate('/dashboard');
+        navigate("/dashboard");
       } else {
-        throw new Error('Email atau password salah');
-      }
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  
-  const handleDemoLogin = async (role: 'admin' | 'officer') => {
-    setError('');
-    setIsLoading(true);
-    
-    try {
-      let demoEmail = '';
-      
-      if (role === 'admin') {
-        demoEmail = 'admin@surabaya.go.id';
-      } else if (role === 'officer') {
-        demoEmail = 'petugas@surabaya.go.id';
-      }
-      
-      const success = await login(demoEmail, 'password123');
-      
-      if (success) {
-        navigate('/dashboard');
-      } else {
-        throw new Error('Demo login failed');
+        throw new Error("Email atau password salah");
       }
     } catch (err) {
       setError((err as Error).message);
@@ -84,7 +56,7 @@ const LoginPage: React.FC = () => {
             Masukkan email dan password untuk melanjutkan
           </p>
         </div>
-        
+
         {error && (
           <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4">
             <div className="flex">
@@ -92,18 +64,18 @@ const LoginPage: React.FC = () => {
                 <AlertTriangle className="h-5 w-5 text-red-400" />
               </div>
               <div className="ml-3">
-                <p className="text-sm text-red-700">
-                  {error}
-                </p>
+                <p className="text-sm text-red-700">{error}</p>
               </div>
             </div>
           </div>
         )}
-        
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
-              <label htmlFor="email-address" className="sr-only">Email address</label>
+              <label htmlFor="email-address" className="sr-only">
+                Email address
+              </label>
               <input
                 id="email-address"
                 name="email"
@@ -117,7 +89,9 @@ const LoginPage: React.FC = () => {
               />
             </div>
             <div>
-              <label htmlFor="password" className="sr-only">Password</label>
+              <label htmlFor="password" className="sr-only">
+                Password
+              </label>
               <input
                 id="password"
                 name="password"
@@ -142,7 +116,7 @@ const LoginPage: React.FC = () => {
               Login
             </Button>
           </div>
-          
+
           {/* Demo login options */}
           <div className="mt-6">
             <div className="relative">
@@ -150,30 +124,9 @@ const LoginPage: React.FC = () => {
                 <div className="w-full border-t border-gray-300" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-gray-50 text-gray-500">Demo Login</span>
-              </div>
-            </div>
-
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              <div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => handleDemoLogin('admin')}
-                >
-                  Login as Admin
-                </Button>
-              </div>
-              <div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => handleDemoLogin('officer')}
-                >
-                  Login as Petugas
-                </Button>
+                <span className="px-2 bg-gray-50 text-gray-500">
+                  Demo Login
+                </span>
               </div>
             </div>
           </div>

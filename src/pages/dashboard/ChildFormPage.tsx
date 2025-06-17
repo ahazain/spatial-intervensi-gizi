@@ -1,389 +1,422 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useChildrenStore } from '../../stores/childrenStore';
-import { Card, CardContent, CardFooter } from '../../components/ui/Card';
-import { Button } from '../../components/ui/Button';
-import PageHeader from '../../components/ui/PageHeader';
-import { districts } from '../../lib/mockData';
-import { Save, MapPin } from 'lucide-react';
-import { Child, NutritionStatus } from '../../types';
-import BaseMap from '../../components/map/BaseMap';
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
+import { useChildrenStore } from "../../stores/childrenStore";
+import { useFacilitiesStore } from "../../stores/facilitiesStore";
+import { Card, CardContent, CardFooter } from "../../components/ui/Card";
+import { Button } from "../../components/ui/Button";
+import PageHeader from "../../components/ui/PageHeader";
+import { Save } from "lucide-react";
 
-const ChildFormPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+interface FormChildrenProps {
+  existingData?: {
+    id: string;
+    nama: string;
+    status_nutrisi: "normal" | "buruk" | "kurang" | "stunting";
+    fasilitas_kesehatan_id: string;
+  };
+  onSuccess?: () => void;
+}
+
+const ChildFormPage: React.FC<FormChildrenProps> = ({
+  existingData: propsExistingData,
+  onSuccess,
+}) => {
   const navigate = useNavigate();
-  const { getChildById, addChild, updateChild } = useChildrenStore();
-  const isEditMode = !!id;
-  
-  // Surabaya's center as default coordinates
-  const defaultCoordinates: [number, number] = [-7.2575, 112.7521];
-  
-  const [formData, setFormData] = useState<{
-    name: string;
-    age: number;
-    nutritionStatus: NutritionStatus;
-    district: string;
-    coordinates: [number, number];
-  }>({
-    name: '',
-    age: 0,
-    nutritionStatus: 'normal',
-    district: '',
-    coordinates: defaultCoordinates,
+  const location = useLocation();
+  const params = useParams();
+  const { addChild, updateChild, children, getChildById } = useChildrenStore();
+  const { facilities, initializeFromSupabase } = useFacilitiesStore();
+
+  const isEditMode = Boolean(
+    params.id || propsExistingData || location.state?.existingData
+  );
+
+  const [existingData, setExistingData] = useState(null);
+  const [formData, setFormData] = useState({
+    nama: "",
+    status_nutrisi: "normal" as const,
+    fasilitas_kesehatan_id: "",
   });
-  
+
   const [errors, setErrors] = useState<{
-    name?: string;
-    age?: string;
-    nutritionStatus?: string;
-    district?: string;
-    coordinates?: string;
+    nama?: string;
+    status_nutrisi?: string;
+    fasilitas_kesehatan_id?: string;
   }>({});
-  
+
   const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
-  
-  // Load existing data if in edit mode
+  const [isDataLoading, setIsDataLoading] = useState(false);
+  const [message, setMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+
+  // Load facilities data
   useEffect(() => {
-    if (isEditMode && id) {
-      const childData = getChildById(id);
-      if (childData) {
-        setFormData({
-          name: childData.name,
-          age: childData.age,
-          nutritionStatus: childData.nutritionStatus,
-          district: childData.district,
-          coordinates: childData.coordinates,
-        });
-      } else {
-        setMessage({
-          type: 'error',
-          text: 'Data balita tidak ditemukan'
-        });
+    const loadFacilities = async () => {
+      try {
+        await initializeFromSupabase();
+      } catch (error) {
+        console.error("Error loading facilities:", error);
       }
+    };
+
+    loadFacilities();
+  }, [initializeFromSupabase]);
+
+  // Load existing data from various sources
+  useEffect(() => {
+    const loadExistingData = async () => {
+      setIsDataLoading(true);
+
+      try {
+        let dataToSet = null;
+
+        if (propsExistingData) {
+          dataToSet = propsExistingData;
+        } else if (location.state?.existingData) {
+          dataToSet = location.state.existingData;
+        } else if (params.id) {
+          const childFromStore = children.find((c) => c.id === params.id);
+          if (childFromStore) {
+            dataToSet = childFromStore;
+          } else {
+            const childFromAPI = await getChildById(params.id);
+            dataToSet = childFromAPI;
+          }
+        }
+
+        if (dataToSet) {
+          setExistingData(dataToSet);
+        }
+      } catch (error) {
+        console.error("Error loading child data:", error);
+        setMessage({
+          type: "error",
+          text: "Gagal memuat data balita",
+        });
+      } finally {
+        setIsDataLoading(false);
+      }
+    };
+
+    if (isEditMode) {
+      loadExistingData();
     }
-  }, [isEditMode, id, getChildById]);
-  
+  }, [
+    params.id,
+    propsExistingData,
+    location.state,
+    children,
+    getChildById,
+    isEditMode,
+  ]);
+
+  // Populate form with existing data
+  useEffect(() => {
+    if (
+      existingData &&
+      typeof existingData === "object" &&
+      !existingData.then
+    ) {
+      setFormData({
+        nama: existingData.nama || "",
+        status_nutrisi: existingData.status_nutrisi || "normal",
+        fasilitas_kesehatan_id: existingData.fasilitas_kesehatan_id || "",
+      });
+    }
+  }, [existingData]);
+
   const validate = () => {
     const newErrors: { [key: string]: string } = {};
-    
-    if (!formData.name.trim()) {
-      newErrors.name = 'Nama balita wajib diisi';
+
+    if (!formData.nama.trim()) {
+      newErrors.nama = "Nama balita wajib diisi";
     }
-    
-    if (formData.age < 0 || formData.age > 60) {
-      newErrors.age = 'Usia harus antara 0-60 bulan';
+
+    if (!formData.fasilitas_kesehatan_id) {
+      newErrors.fasilitas_kesehatan_id = "Fasilitas kesehatan wajib dipilih";
     }
-    
-    if (!formData.district) {
-      newErrors.district = 'Kecamatan wajib dipilih';
+
+    if (formData.fasilitas_kesehatan_id) {
+      const facilityExists = facilities.find(
+        (f) => String(f.id) === String(formData.fasilitas_kesehatan_id)
+      );
+
+      if (!facilityExists) {
+        newErrors.fasilitas_kesehatan_id =
+          "Fasilitas kesehatan yang dipilih tidak valid";
+      }
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validate()) {
       return;
     }
-    
+
     setIsLoading(true);
     setMessage(null);
-    
+
+    const balitaData = {
+      nama: formData.nama,
+      status_nutrisi: formData.status_nutrisi,
+      fasilitas_kesehatan_id: formData.fasilitas_kesehatan_id,
+    };
+
     try {
-      if (isEditMode && id) {
-        await updateChild(id, formData);
-        setMessage({
-          type: 'success',
-          text: 'Data balita berhasil diperbarui'
-        });
+      if (existingData?.id) {
+        await updateChild(existingData.id, balitaData);
       } else {
-        await addChild(formData);
-        setMessage({
-          type: 'success',
-          text: 'Data balita berhasil ditambahkan'
-        });
+        await addChild(balitaData);
       }
-      
-      // Redirect after successful submission
+
+      setMessage({
+        type: "success",
+        text: `Data balita berhasil ${
+          existingData ? "diperbarui" : "disimpan"
+        }`,
+      });
+
+      onSuccess?.();
       setTimeout(() => {
-        navigate('/dashboard/children');
+        navigate("/dashboard/children");
       }, 1500);
     } catch (error) {
+      console.error("Error saving child:", error);
       setMessage({
-        type: 'error',
-        text: 'Terjadi kesalahan saat menyimpan data'
+        type: "error",
+        text: "Terjadi kesalahan saat menyimpan data",
       });
     } finally {
       setIsLoading(false);
     }
   };
-  
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: name === 'age' ? parseInt(value) || 0 : value }));
-    
-    // Clear error on input change
-    if (errors[name as keyof typeof errors]) {
-      setErrors(prev => ({ ...prev, [name]: undefined }));
-    }
-  };
-  
-  const handleMapClick = (e: { latlng: { lat: number, lng: number } }) => {
-    const { lat, lng } = e.latlng;
-    setFormData(prev => ({
+
+    setFormData((prev) => ({
       ...prev,
-      coordinates: [lat, lng]
+      [name]: value,
     }));
-    
-    // Clear coordinate error if exists
-    if (errors.coordinates) {
-      setErrors(prev => ({ ...prev, coordinates: undefined }));
+
+    if (errors[name as keyof typeof errors]) {
+      setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
   };
 
+  const handleReset = () => {
+    if (existingData) {
+      setFormData({
+        nama: existingData.nama || "",
+        status_nutrisi: existingData.status_nutrisi || "normal",
+        fasilitas_kesehatan_id: existingData.fasilitas_kesehatan_id || "",
+      });
+    } else {
+      setFormData({
+        nama: "",
+        status_nutrisi: "normal",
+        fasilitas_kesehatan_id: "",
+      });
+    }
+    setErrors({});
+    setMessage(null);
+  };
+
+  if (isDataLoading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-center items-center h-64">
+          <div className="text-lg">Memuat data...</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <PageHeader 
-        title={isEditMode ? 'Edit Data Balita' : 'Tambah Data Balita'} 
-        description={isEditMode ? 'Perbarui informasi balita' : 'Tambahkan balita baru ke sistem'}
+      <PageHeader
+        title={isEditMode ? "Edit Data Balita" : "Tambah Data Balita"}
+        description={
+          isEditMode
+            ? "Edit data balita yang sudah ada"
+            : "Tambahkan balita baru ke sistem"
+        }
         backLink="/dashboard/children"
         backLinkText="Kembali ke Daftar Balita"
       />
-      
+
       {message && (
-        <div className={`p-4 rounded-md mb-6 ${
-          message.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
-        }`}>
+        <div
+          className={`p-4 rounded-md mb-6 ${
+            message.type === "success"
+              ? "bg-green-50 text-green-700"
+              : "bg-red-50 text-red-700"
+          }`}
+        >
           {message.text}
         </div>
       )}
-      
+
       <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <Card>
             <form onSubmit={handleSubmit}>
               <CardContent className="p-6 space-y-6">
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="nama"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Nama Balita <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
-                    id="name"
-                    name="name"
+                    id="nama"
+                    name="nama"
                     className={`mt-1 block w-full rounded-md shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm ${
-                      errors.name ? 'border-red-300' : 'border-gray-300'
+                      errors.nama ? "border-red-300" : "border-gray-300"
                     }`}
-                    value={formData.name}
+                    value={formData.nama}
                     onChange={handleInputChange}
+                    placeholder="Masukkan nama lengkap balita"
                   />
-                  {errors.name && (
-                    <p className="mt-2 text-sm text-red-600">{errors.name}</p>
+                  {errors.nama && (
+                    <p className="mt-2 text-sm text-red-600">{errors.nama}</p>
                   )}
                 </div>
-                
+
                 <div>
-                  <label htmlFor="age" className="block text-sm font-medium text-gray-700">
-                    Usia (bulan) <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    id="age"
-                    name="age"
-                    min="0"
-                    max="60"
-                    className={`mt-1 block w-full rounded-md shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm ${
-                      errors.age ? 'border-red-300' : 'border-gray-300'
-                    }`}
-                    value={formData.age}
-                    onChange={handleInputChange}
-                  />
-                  {errors.age && (
-                    <p className="mt-2 text-sm text-red-600">{errors.age}</p>
-                  )}
-                </div>
-                
-                <div>
-                  <label htmlFor="nutritionStatus" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="status_nutrisi"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Status Gizi <span className="text-red-500">*</span>
                   </label>
                   <select
-                    id="nutritionStatus"
-                    name="nutritionStatus"
+                    id="status_nutrisi"
+                    name="status_nutrisi"
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm"
-                    value={formData.nutritionStatus}
+                    value={formData.status_nutrisi}
                     onChange={handleInputChange}
                   >
                     <option value="normal">Normal</option>
-                    <option value="underweight">Gizi Kurang</option>
-                    <option value="severely_underweight">Gizi Buruk</option>
+                    <option value="kurang">Gizi Kurang</option>
+                    <option value="buruk">Gizi Buruk</option>
                     <option value="stunting">Stunting</option>
                   </select>
                 </div>
-                
+
                 <div>
-                  <label htmlFor="district" className="block text-sm font-medium text-gray-700">
-                    Kecamatan <span className="text-red-500">*</span>
+                  <label
+                    htmlFor="fasilitas_kesehatan_id"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Fasilitas Kesehatan <span className="text-red-500">*</span>
                   </label>
                   <select
-                    id="district"
-                    name="district"
+                    id="fasilitas_kesehatan_id"
+                    name="fasilitas_kesehatan_id"
                     className={`mt-1 block w-full rounded-md shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm ${
-                      errors.district ? 'border-red-300' : 'border-gray-300'
+                      errors.fasilitas_kesehatan_id
+                        ? "border-red-300"
+                        : "border-gray-300"
                     }`}
-                    value={formData.district}
+                    value={formData.fasilitas_kesehatan_id}
                     onChange={handleInputChange}
+                    disabled={facilities.length === 0}
                   >
-                    <option value="">Pilih Kecamatan</option>
-                    {districts.map(district => (
-                      <option key={district} value={district}>{district}</option>
-                    ))}
+                    {facilities.length === 0 ? (
+                      <option value="" disabled>
+                        Memuat fasilitas kesehatan...
+                      </option>
+                    ) : (
+                      <>
+                        <option value="">Pilih Fasilitas Kesehatan</option>
+                        {facilities
+                          .filter(
+                            (faskes) => faskes.id && faskes.nama && faskes.type
+                          )
+                          .map((faskes) => (
+                            <option key={faskes.id} value={String(faskes.id)}>
+                              {faskes.nama} ({faskes.type})
+                            </option>
+                          ))}
+                      </>
+                    )}
                   </select>
-                  {errors.district && (
-                    <p className="mt-2 text-sm text-red-600">{errors.district}</p>
-                  )}
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Lokasi <span className="text-red-500">*</span>
-                  </label>
-                  <p className="text-sm text-gray-500 mb-2">
-                    Klik pada peta untuk menentukan lokasi
-                  </p>
-                  
-                  <div className="h-80 rounded-lg border border-gray-300 overflow-hidden">
-                    <BaseMap
-                      center={formData.coordinates}
-                      zoom={13}
-                      className="h-full w-full"
-                    >
-                      {formData.coordinates && (
-                        <div onClick={(e: any) => handleMapClick(e)} className="leaflet-click-handler" />
-                      )}
-                      {/* Add a marker for the current coordinates */}
-                      {formData.coordinates && (
-                        <div 
-                          className="leaflet-marker" 
-                          style={{ 
-                            position: 'absolute', 
-                            top: '50%', 
-                            left: '50%', 
-                            transform: 'translate(-50%, -50%)' 
-                          }}
-                        />
-                      )}
-                    </BaseMap>
-                  </div>
-                  
-                  <div className="mt-2 flex items-center space-x-4">
-                    <div>
-                      <label htmlFor="latitude" className="block text-xs font-medium text-gray-500">
-                        Latitude
-                      </label>
-                      <input
-                        type="text"
-                        id="latitude"
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-xs"
-                        value={formData.coordinates[0]}
-                        readOnly
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="longitude" className="block text-xs font-medium text-gray-500">
-                        Longitude
-                      </label>
-                      <input
-                        type="text"
-                        id="longitude"
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-xs"
-                        value={formData.coordinates[1]}
-                        readOnly
-                      />
-                    </div>
-                    <div className="mt-auto">
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        leftIcon={<MapPin size={16} />}
-                        className="mt-1"
-                      >
-                        Pilih di Peta
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  {errors.coordinates && (
-                    <p className="mt-2 text-sm text-red-600">{errors.coordinates}</p>
+                  {errors.fasilitas_kesehatan_id && (
+                    <p className="mt-2 text-sm text-red-600">
+                      {errors.fasilitas_kesehatan_id}
+                    </p>
                   )}
                 </div>
               </CardContent>
-              
+
               <CardFooter className="px-6 py-4 bg-gray-50 flex justify-end">
                 <div className="flex space-x-3">
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => navigate('/dashboard/children')}
+                    onClick={() => navigate("/dashboard/children")}
                   >
                     Batal
+                  </Button>
+                  <Button type="button" variant="outline" onClick={handleReset}>
+                    Reset Form
                   </Button>
                   <Button
                     type="submit"
                     variant="primary"
                     leftIcon={<Save size={16} />}
                     isLoading={isLoading}
+                    disabled={facilities.length === 0}
                   >
-                    {isEditMode ? 'Perbarui' : 'Simpan'}
+                    {isEditMode ? "Perbarui" : "Simpan"}
                   </Button>
                 </div>
               </CardFooter>
             </form>
           </Card>
         </div>
-        
+
         <div>
           <Card>
             <CardContent className="p-6">
               <h3 className="text-lg font-medium text-gray-900 mb-4">
                 Petunjuk Pengisian
               </h3>
-              
+
               <div className="space-y-4 text-sm text-gray-600">
                 <div>
                   <h4 className="font-medium text-gray-900">Nama Balita</h4>
                   <p>Masukkan nama lengkap balita</p>
                 </div>
-                
-                <div>
-                  <h4 className="font-medium text-gray-900">Usia (bulan)</h4>
-                  <p>Masukkan usia balita dalam bulan (0-60 bulan)</p>
-                </div>
-                
+
                 <div>
                   <h4 className="font-medium text-gray-900">Status Gizi</h4>
-                  <p>Pilih status gizi balita berdasarkan klasifikasi:</p>
-                  <ul className="list-disc list-inside mt-2 pl-2 space-y-1">
-                    <li>Normal: BB/U dan TB/U normal</li>
-                    <li>Gizi Kurang: BB/U -2 SD s/d -3 SD</li>
-                    <li>Gizi Buruk: BB/U &lt; -3 SD</li>
-                    <li>Stunting: TB/U &lt; -2 SD</li>
-                  </ul>
+                  <p>
+                    Pilih status gizi balita berdasarkan klasifikasi
+                    WHO/Kemenkes
+                  </p>
                 </div>
-                
+
                 <div>
-                  <h4 className="font-medium text-gray-900">Kecamatan</h4>
-                  <p>Pilih kecamatan tempat tinggal balita</p>
-                </div>
-                
-                <div>
-                  <h4 className="font-medium text-gray-900">Lokasi</h4>
-                  <p>Klik pada peta untuk menentukan lokasi tempat tinggal balita</p>
+                  <h4 className="font-medium text-gray-900">
+                    Fasilitas Kesehatan
+                  </h4>
+                  <p>
+                    Pilih fasilitas kesehatan tempat balita terdaftar atau
+                    berobat
+                  </p>
                 </div>
               </div>
             </CardContent>

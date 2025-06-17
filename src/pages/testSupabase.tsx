@@ -1,12 +1,10 @@
-// src/pages/TestSupabase.tsx
-
-import { supabase } from "../lib/Supabase";
+import supabase from "./../helper/SupabaseClient";
 import { useEffect } from "react";
 
 export default function TestSupabase() {
   useEffect(() => {
     const test = async () => {
-      const { data, error } = await supabase.from("kecamatan").select("*");
+      const { data, error } = await supabase.from("balita").select("*");
       if (error) {
         console.error("Error:", error.message);
       } else {

@@ -1,129 +1,86 @@
-import { create } from 'zustand';
-import { Child, NutritionStatus } from '../types';
-import { mockChildren } from '../lib/mockData';
+import { create } from "zustand";
+import { Balita } from "../types";
+import {
+  getAllBalita,
+  addBalita,
+  updateBalita,
+  getBalitaById,
+  deleteBalita,
+} from "../services/balitaService";
 
-interface ChildrenState {
-  children: Child[];
-  loading: boolean;
-  error: string | null;
-  
-  // Actions
-  fetchChildren: () => Promise<void>;
-  addChild: (child: Omit<Child, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Child>;
-  updateChild: (id: string, data: Partial<Omit<Child, 'id' | 'createdAt' | 'updatedAt'>>) => Promise<Child>;
-  deleteChild: (id: string) => Promise<boolean>;
-  getChildById: (id: string) => Child | undefined;
-  getChildrenByDistrict: (district: string) => Child[];
-  getChildrenByStatus: (status: NutritionStatus) => Child[];
+interface ChildrenStore {
+  children: Balita[];
+  setChildren: (children: Balita[]) => void;
+  getChildById: (id: string) => Promise<Balita | null>;
+  addChild: (child: Omit<Balita, "id">) => Promise<void>;
+  updateChild: (id: string, updatedData: Partial<Balita>) => Promise<void>;
+  deleteChild: (id: string) => Promise<void>;
+
+  initializeFromSupabase: () => Promise<void>;
 }
 
-export const useChildrenStore = create<ChildrenState>((set, get) => ({
+export const useChildrenStore = create<ChildrenStore>((set) => ({
   children: [],
-  loading: false,
-  error: null,
 
-  fetchChildren: async () => {
-    set({ loading: true, error: null });
+  setChildren: (children: Balita[]) => set({ children }),
+
+  getChildById: async (id: string) => {
     try {
-      // In a real app, this would be an API call
-      // Using timeout to simulate network latency
-      await new Promise(resolve => setTimeout(resolve, 500));
-      set({ children: mockChildren, loading: false });
+      const balita = await getBalitaById(id);
+      return balita;
     } catch (error) {
-      set({ error: 'Failed to fetch children data', loading: false });
+      console.error(`Gagal mengambil data balita dengan id ${id}:`, error);
+      return null;
     }
   },
 
-  addChild: async (childData) => {
-    set({ loading: true, error: null });
+  addChild: async (child: Omit<Balita, "id">) => {
     try {
-      // In a real app, this would be an API call
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const newChild: Child = {
-        ...childData,
-        id: `child-${Date.now()}`,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      
-      set(state => ({ 
+      const newChild = await addBalita(child as Balita);
+      set((state) => ({
         children: [...state.children, newChild],
-        loading: false
       }));
-      
-      return newChild;
     } catch (error) {
-      set({ error: 'Failed to add child', loading: false });
-      throw error;
+      console.error("Gagal menambahkan balita:", error);
     }
   },
 
-  updateChild: async (id, data) => {
-    set({ loading: true, error: null });
+  updateChild: async (id: string, updatedData: Partial<Balita>) => {
     try {
-      // In a real app, this would be an API call
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      let updatedChild: Child | undefined;
-      
-      set(state => {
-        const updatedChildren = state.children.map(child => {
-          if (child.id === id) {
-            updatedChild = {
-              ...child,
-              ...data,
-              updatedAt: new Date().toISOString()
-            };
-            return updatedChild;
-          }
-          return child;
-        });
-        
-        return {
-          children: updatedChildren,
-          loading: false
-        };
-      });
-      
-      if (!updatedChild) {
-        throw new Error('Child not found');
-      }
-      
-      return updatedChild;
-    } catch (error) {
-      set({ error: 'Failed to update child', loading: false });
-      throw error;
-    }
-  },
-
-  deleteChild: async (id) => {
-    set({ loading: true, error: null });
-    try {
-      // In a real app, this would be an API call
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      set(state => ({
-        children: state.children.filter(child => child.id !== id),
-        loading: false
+      const updatedChild = await updateBalita(id, updatedData);
+      set((state) => ({
+        children: state.children.map((child) =>
+          child.id === id ? updatedChild : child
+        ),
       }));
-      
-      return true;
     } catch (error) {
-      set({ error: 'Failed to delete child', loading: false });
-      return false;
+      console.error("Gagal mengupdate balita:", error);
     }
   },
 
-  getChildById: (id) => {
-    return get().children.find(child => child.id === id);
+  initializeFromSupabase: async () => {
+    console.log("Mulai inisialisasi dari Supabase...");
+    try {
+      const data = await getAllBalita();
+      console.log("Data berhasil diambil dari Supabase:", data);
+      console.log("Jumlah data:", data?.length);
+      set({ children: data });
+      console.log("Store berhasil diupdate");
+    } catch (err) {
+      console.error("Gagal inisialisasi dari Supabase:", err);
+    }
   },
 
-  getChildrenByDistrict: (district) => {
-    return get().children.filter(child => child.district === district);
+  deleteChild: async (id: string) => {
+    try {
+      await deleteBalita(id);
+      // Hapus dari state lokal
+      set((state) => ({
+        children: state.children.filter((child) => child.id !== id),
+      }));
+      console.log(`Balita dengan id ${id} berhasil dihapus dari store`);
+    } catch (error) {
+      console.error("Gagal menghapus balita:", error);
+    }
   },
-
-  getChildrenByStatus: (status) => {
-    return get().children.filter(child => child.nutritionStatus === status);
-  }
 }));
