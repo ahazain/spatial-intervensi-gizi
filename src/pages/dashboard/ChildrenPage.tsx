@@ -5,7 +5,7 @@ import { DataTable } from "../../components/ui/DataTable";
 import { Button, ButtonLink } from "../../components/ui/Button";
 import PageHeader from "../../components/ui/PageHeader";
 import { Balita } from "../../types";
-import { Plus, Edit2, Trash2, Search } from "lucide-react";
+import { Plus, Edit2, Trash2, Search, AlertTriangle, X } from "lucide-react";
 
 // StatusBadge component integrated directly
 interface StatusBadgeProps {
@@ -80,12 +80,118 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
   );
 };
 
+// Delete Confirmation Modal Component
+interface DeleteModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  childName: string;
+  isDeleting: boolean;
+}
+
+const DeleteModal: React.FC<DeleteModalProps> = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  childName,
+  isDeleting,
+}) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-y-auto">
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+        onClick={onClose}
+      />
+
+      {/* Modal */}
+      <div className="flex min-h-full items-center justify-center p-4">
+        <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full mx-auto">
+          {/* Close button */}
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+            disabled={isDeleting}
+          >
+            <X size={20} />
+          </button>
+
+          {/* Content */}
+          <div className="p-6">
+            {/* Icon */}
+            <div className="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full mb-4">
+              <AlertTriangle className="w-6 h-6 text-red-600" />
+            </div>
+
+            {/* Title */}
+            <div className="text-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Hapus Data Balita
+              </h3>
+              <p className="text-sm text-gray-600">
+                Apakah Anda yakin ingin menghapus data balita{" "}
+                <span className="font-medium text-gray-900">"{childName}"</span>
+                ?
+              </p>
+              <p className="text-xs text-red-600 mt-2">
+                Tindakan ini tidak dapat dibatalkan.
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className="flex space-x-3">
+              <Button
+                variant="ghost"
+                onClick={onClose}
+                className="flex-1"
+                disabled={isDeleting}
+              >
+                Batal
+              </Button>
+              <Button
+                variant="primary"
+                onClick={onConfirm}
+                className="flex-1 bg-red-600 hover:bg-red-700 focus:ring-red-500"
+                disabled={isDeleting}
+              >
+                {isDeleting ? (
+                  <div className="flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Menghapus...
+                  </div>
+                ) : (
+                  "Hapus"
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const ChildrenPage: React.FC = () => {
   const { children, initializeFromSupabase } = useChildrenStore();
   const { facilities, initializeFromSupabase: initializeFacilities } =
     useFacilitiesStore();
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+
+  // Delete modal state
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    childId: string;
+    childName: string;
+    isDeleting: boolean;
+  }>({
+    isOpen: false,
+    childId: "",
+    childName: "",
+    isDeleting: false,
+  });
 
   useEffect(() => {
     const initializeData = async () => {
@@ -142,6 +248,45 @@ const ChildrenPage: React.FC = () => {
       console.log("=== END DEBUGGING ===");
     }
   }, [children]);
+
+  const openDeleteModal = (childId: string, childName: string) => {
+    setDeleteModal({
+      isOpen: true,
+      childId,
+      childName,
+      isDeleting: false,
+    });
+  };
+
+  const closeDeleteModal = () => {
+    if (deleteModal.isDeleting) return; // Prevent closing while deleting
+    setDeleteModal({
+      isOpen: false,
+      childId: "",
+      childName: "",
+      isDeleting: false,
+    });
+  };
+
+  const handleDelete = async () => {
+    setDeleteModal((prev) => ({ ...prev, isDeleting: true }));
+
+    try {
+      await useChildrenStore.getState().deleteChild(deleteModal.childId);
+      await initializeFromSupabase(); // refresh data
+      closeDeleteModal();
+
+      // Optional: Show success notification
+      // You can integrate with a toast notification system here
+      console.log("Data balita berhasil dihapus");
+    } catch (error) {
+      console.error("Gagal menghapus data balita:", error);
+      setDeleteModal((prev) => ({ ...prev, isDeleting: false }));
+
+      // Optional: Show error notification
+      alert("Terjadi kesalahan saat menghapus data.");
+    }
+  };
 
   const filteredChildren = children.filter((child) => {
     // Add null/undefined checks
@@ -271,7 +416,7 @@ const ChildrenPage: React.FC = () => {
                 size="sm"
                 leftIcon={<Trash2 size={16} className="text-red-500" />}
                 className="text-red-500 hover:bg-red-50"
-                // onClick={() => handleDelete(child.id)}
+                onClick={() => openDeleteModal(child.id, child.nama)}
               >
                 Hapus
               </Button>
@@ -279,6 +424,15 @@ const ChildrenPage: React.FC = () => {
           )}
         />
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteModal
+        isOpen={deleteModal.isOpen}
+        onClose={closeDeleteModal}
+        onConfirm={handleDelete}
+        childName={deleteModal.childName}
+        isDeleting={deleteModal.isDeleting}
+      />
     </div>
   );
 };
