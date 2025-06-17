@@ -1,5 +1,5 @@
 import supabase from "../helper/SupabaseClient";
-import { PopUpFailitasKesehatan } from "../types";
+import { PopUpFailitasKesehatan, FasilitasKesehatan } from "../types";
 export const getAllFasilitasBalita = async (): Promise<
   PopUpFailitasKesehatan[]
 > => {
@@ -23,4 +23,19 @@ export const getAllFasilitasBalita = async (): Promise<
   console.log("Sample mapped facility:", mappedData[0]);
 
   return mappedData as PopUpFailitasKesehatan[];
+};
+
+export const createFasilitasKesehatan = async (
+  fasilitas: Omit<FasilitasKesehatan, "id">
+): Promise<void> => {
+  const { error } = await supabase.from("fasilitas_kesehatan").insert([
+    fasilitas,
+  ]);
+
+  if (error) {
+    console.error("Gagal menambahkan fasilitas:", error.message);
+    throw error;
+  }
+
+  console.log("Fasilitas berhasil ditambahkan:", fasilitas);
 };

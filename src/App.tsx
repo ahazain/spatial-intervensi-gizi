@@ -24,10 +24,10 @@ import PublicStatsPage from "./pages/public/PublicStatsPage";
 // import DashboardPage from "./pages/dashboard/DashboardPage";
 import ChildrenPage from "./pages/dashboard/ChildrenPage";
 import ChildFormPage from "./pages/dashboard/ChildFormPage";
-// import FacilitiesPage from "./pages/dashboard/FacilitiesPage";
+import FacilitiesPage from "./pages/dashboard/FacilitiesPage";
 // import MapAnalysisPage from "./pages/dashboard/MapAnalysisPage";
 // import StatisticsPage from "./pages/dashboard/StatisticsPage";
-// import FacilityFormPage from "./pages/dashboard/FacilityFormPage";
+import FacilityFormPage from "./pages/dashboard/FacilityFormPage";
 
 //auth
 import Test from "./pages/testSupabase";
@@ -98,7 +98,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          {/* <Route path="facilities" element={<FacilitiesPage />} />
+          <Route path="facilities" element={<FacilitiesPage />} />
           <Route
             path="facilities/add"
             element={
@@ -107,7 +107,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route
+          {/* <Route
             path="facilities/edit/:id"
             element={
               <ProtectedRoute>
