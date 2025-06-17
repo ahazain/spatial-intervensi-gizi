@@ -11,12 +11,15 @@ export const useFacilitiesStore = create<FacilitiesStore>((set) => ({
   facilities: [],
 
   initializeFromSupabase: async () => {
-    console.log(" Mulai inisialisasi fasilitas dari Supabase...");
+    console.log("Mulai inisialisasi fasilitas dari Supabase...");
     try {
       const data = await getAllFasilitasBalita();
-      console.log(" Data fasilitas berhasil diambil dari Supabase:", data);
-      console.log(" Jumlah data fasilitas:", data?.length);
-      set({ facilities: data || [] });
+      console.log("Data fasilitas berhasil diambil dari Supabase:", data);
+      console.log("Jumlah data fasilitas:", data?.length);
+
+    
+      set({ facilities: data });
+
       console.log("Facilities store berhasil diupdate");
     } catch (err) {
       console.error("Gagal inisialisasi fasilitas dari Supabase:", err);

@@ -22,8 +22,8 @@ import PublicStatsPage from "./pages/public/PublicStatsPage";
 
 // Protected Pages
 // import DashboardPage from "./pages/dashboard/DashboardPage";
-// import ChildrenPage from "./pages/dashboard/ChildrenPage";
-// import ChildFormPage from "./pages/dashboard/ChildFormPage";
+import ChildrenPage from "./pages/dashboard/ChildrenPage";
+import ChildFormPage from "./pages/dashboard/ChildFormPage";
 // import FacilitiesPage from "./pages/dashboard/FacilitiesPage";
 // import MapAnalysisPage from "./pages/dashboard/MapAnalysisPage";
 // import StatisticsPage from "./pages/dashboard/StatisticsPage";
@@ -80,9 +80,9 @@ function App() {
             </ProtectedRoute>
           }
         >
-          {/* <Route index element={<DashboardPage />} />
-          <Route path="children" element={<ChildrenPage />} /> */}
-          {/* <Route
+          {/* <Route index element={<DashboardPage />} /> */}
+          <Route path="children" element={<ChildrenPage />} />
+          <Route
             path="children/add"
             element={
               <ProtectedRoute>
@@ -98,7 +98,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="facilities" element={<FacilitiesPage />} />
+          {/* <Route path="facilities" element={<FacilitiesPage />} />
           <Route
             path="facilities/add"
             element={
@@ -115,8 +115,8 @@ function App() {
               </ProtectedRoute>
             }
           /> */}
-          {/* <Route path="map-analysis" element={<MapAnalysisPage />} /> */}
-          {/* <Route path="statistics" element={<StatisticsPage />} /> */}
+          {/* <Route path="map-analysis" element={<MapAnalysisPage />} />
+          <Route path="statistics" element={<StatisticsPage />} /> */}
         </Route>
       </Routes>
     </Router>
