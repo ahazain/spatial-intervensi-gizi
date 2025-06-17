@@ -23,8 +23,8 @@ export interface Kecamatan {
   area: GeoPolygon;
 }
 export interface GeoPolygon {
-  type: "Polygon";
-  coordinates: number[][][];
+  type: "Polygon" | "MultiPolygon";
+  coordinates: number[][][] | number[][][][]; // Polygon: 3D, MultiPolygon: 4D
 }
 export interface Balita {
   id: string;
