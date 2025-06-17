@@ -25,8 +25,8 @@ import PublicStatsPage from "./pages/public/PublicStatsPage";
 import ChildrenPage from "./pages/dashboard/ChildrenPage";
 import ChildFormPage from "./pages/dashboard/ChildFormPage";
 import FacilitiesPage from "./pages/dashboard/FacilitiesPage";
-// import MapAnalysisPage from "./pages/dashboard/MapAnalysisPage";
-// import StatisticsPage from "./pages/dashboard/StatisticsPage";
+import MapAnalysisPage from "./pages/dashboard/MapAnalysisPage";
+import StatisticsPage from "./pages/dashboard/StatisticsPage";
 import FacilityFormPage from "./pages/dashboard/FacilityFormPage";
 
 //auth
@@ -115,8 +115,8 @@ function App() {
               </ProtectedRoute>
             }
           />
-          {/* <Route path="map-analysis" element={<MapAnalysisPage />} />
-          <Route path="statistics" element={<StatisticsPage />} /> */}
+          <Route path="map-analysis" element={<MapAnalysisPage />} />
+          <Route path="statistics" element={<StatisticsPage />} />
         </Route>
       </Routes>
     </Router>
