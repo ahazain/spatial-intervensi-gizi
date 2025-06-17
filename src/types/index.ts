@@ -40,7 +40,7 @@ export interface FasilitasKesehatan {
   id: string;
   nama: string;
   type: "puskesmas" | "pustu" | "rumah sakit"; //union
-  Kecamatan_id: string;
+  kecamatan_id: string;
   lokasi: GeoPoint;
   capacity: number;
 }
@@ -57,8 +57,8 @@ export interface MapFilters {
 export interface PopUpFailitasKesehatan {
   fasilitas_id: string;
   fasilitas_nama: string;
-  id: string; // alias untuk kecamatan_id
-  nama: string; // alias untuk kecamatan_nama
+  kecamatan_id: string;
+  kecamatan_nama: string;
   type: string;
   capacity: number;
   total_balita: number;
