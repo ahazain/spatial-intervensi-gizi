@@ -10,13 +10,16 @@ const FacilitiesPage: React.FC = () => {
   const { facilities } = useFacilitiesStore();
   const [searchTerm, setSearchTerm] = useState("");
 
-  const filteredFacilities = facilities.filter(
-    (facility) =>
-      facility.fasilitas_nama
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      facility.nama.toLowerCase().includes(searchTerm.toLowerCase()) // nama = kecamatan
-  );
+  const filteredFacilities = facilities.filter((facility) => {
+    // Pastikan nilai tidak null/undefined sebelum memanggil toLowerCase()
+    const facilityName = facility.fasilitas_nama?.toLowerCase() || "";
+    const kecamatanName = facility.kecamatan_nama?.toLowerCase() || "";
+    const searchLower = searchTerm.toLowerCase();
+
+    return (
+      facilityName.includes(searchLower) || kecamatanName.includes(searchLower)
+    );
+  });
 
   const columns = [
     {
@@ -35,7 +38,10 @@ const FacilitiesPage: React.FC = () => {
     },
     {
       header: "Kecamatan",
-      accessor: (facility: PopUpFailitasKesehatan) => facility.nama,
+      accessor: (facility: PopUpFailitasKesehatan) => {
+        console.log("facility kecamatan:", facility.kecamatan?.nama);
+        return facility.kecamatan_nama;
+      },
     },
     {
       header: "Kapasitas",

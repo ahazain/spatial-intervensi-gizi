@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Marker, Popup, useMapEvents } from "react-leaflet";
 import { useFacilitiesStore } from "../../stores/facilitiesStore";
 import { useKecamatanStore } from "../../stores/kecamatanStore";
 import { Card, CardContent, CardFooter } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 import PageHeader from "../../components/ui/PageHeader";
-import { Save, MapPin } from "lucide-react";
+import { Save, MapPin, Loader } from "lucide-react";
 import BaseMap from "../../components/map/BaseMap";
-import { FasilitasKesehatan } from "../../types";
 
-const FacilityFormPage: React.FC = () => {
+const FacilityUpdateFormPage: React.FC = () => {
   const navigate = useNavigate();
-  const { addFacility } = useFacilitiesStore();
+  const { id } = useParams<{ id: string }>();
+  const { selectedFacility, getFacilityById, updateFacility } =
+    useFacilitiesStore();
   const { kecamatanList, initializeFromSupabase } = useKecamatanStore();
 
   // Surabaya's center as default coordinates
@@ -40,17 +41,62 @@ const FacilityFormPage: React.FC = () => {
   }>({});
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingData, setIsLoadingData] = useState(true);
   const [message, setMessage] = useState<{
     type: "success" | "error";
     text: string;
   } | null>(null);
 
-  // Initialize kecamatan data on component mount
+  // Initialize kecamatan data and facility data on component mount
   useEffect(() => {
-    if (kecamatanList.length === 0) {
-      initializeFromSupabase();
+    const initializeData = async () => {
+      try {
+        setIsLoadingData(true);
+
+        // Validate ID parameter - check if it exists and is not empty
+        if (!id || id.trim() === "") {
+          setMessage({
+            type: "error",
+            text: "ID fasilitas tidak valid",
+          });
+          setIsLoadingData(false);
+          return;
+        }
+
+        // Initialize kecamatan data if not already loaded
+        if (kecamatanList.length === 0) {
+          await initializeFromSupabase();
+        }
+
+        // Get facility data by ID (using string ID directly)
+        console.log("Fetching facility with ID:", id);
+        await getFacilityById(id);
+      } catch (error) {
+        console.error("Error initializing data:", error);
+        setMessage({
+          type: "error",
+          text: "Gagal memuat data fasilitas",
+        });
+      } finally {
+        setIsLoadingData(false);
+      }
+    };
+
+    initializeData();
+  }, [id, kecamatanList.length, initializeFromSupabase, getFacilityById]);
+
+  // Update form data when selectedFacility changes
+  useEffect(() => {
+    if (selectedFacility) {
+      setFormData({
+        nama: selectedFacility.nama,
+        type: selectedFacility.type,
+        kecamatan_id: selectedFacility.kecamatan_id,
+        capacity: selectedFacility.capacity,
+        coordinates: selectedFacility.lokasi?.coordinates || defaultCoordinates,
+      });
     }
-  }, [kecamatanList.length, initializeFromSupabase]);
+  }, [selectedFacility]);
 
   // Component untuk handle map click events
   const MapClickHandler: React.FC = () => {
@@ -93,7 +139,14 @@ const FacilityFormPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validate()) {
+    // Validate form and ID
+    if (!validate() || !id || id.trim() === "") {
+      if (!id || id.trim() === "") {
+        setMessage({
+          type: "error",
+          text: "ID fasilitas tidak valid",
+        });
+      }
       return;
     }
 
@@ -101,22 +154,23 @@ const FacilityFormPage: React.FC = () => {
     setMessage(null);
 
     try {
-      // Create facility data according to FasilitasKesehatan interface
-      const facilityData: Omit<FasilitasKesehatan, "id"> = {
+      // Create update data - use database column names, not interface names
+      const updateData = {
         nama: formData.nama,
         type: formData.type,
-        kecamatan_id: formData.kecamatan_id, // Changed from Kecamatan_id to kecamatan_id
+        kecamatan_id: formData.kecamatan_id,
         lokasi: {
-          type: "Point",
+          type: "Point" as const,
           coordinates: formData.coordinates,
         },
         capacity: formData.capacity,
       };
 
-      await addFacility(facilityData);
+      console.log("Updating facility with ID:", id, updateData);
+      await updateFacility(id, updateData);
       setMessage({
         type: "success",
-        text: "Data fasilitas kesehatan berhasil ditambahkan",
+        text: "Data fasilitas kesehatan berhasil diperbarui",
       });
 
       // Redirect after successful submission
@@ -127,7 +181,7 @@ const FacilityFormPage: React.FC = () => {
       console.log("Error:", error);
       setMessage({
         type: "error",
-        text: "Terjadi kesalahan saat menyimpan data",
+        text: "Terjadi kesalahan saat memperbarui data",
       });
     } finally {
       setIsLoading(false);
@@ -149,18 +203,6 @@ const FacilityFormPage: React.FC = () => {
     }
   };
 
-  const handleMapClick = (coordinates: [number, number]) => {
-    setFormData((prev) => ({
-      ...prev,
-      coordinates: coordinates,
-    }));
-
-    // Clear coordinate error if exists
-    if (errors.coordinates) {
-      setErrors((prev) => ({ ...prev, coordinates: undefined }));
-    }
-  };
-
   const handleCoordinateInputChange = (type: "lat" | "lng", value: string) => {
     const numValue = parseFloat(value);
     if (!isNaN(numValue)) {
@@ -179,11 +221,58 @@ const FacilityFormPage: React.FC = () => {
     setFormData((prev) => ({ ...prev, coordinates: [...prev.coordinates] }));
   };
 
+  // Show loading spinner while data is being fetched
+  if (isLoadingData) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-center min-h-96">
+          <div className="flex items-center space-x-2">
+            <Loader className="animate-spin h-6 w-6 text-teal-600" />
+            <span className="text-gray-600">Memuat data fasilitas...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error if facility not found or invalid ID
+  if ((!selectedFacility && !isLoadingData) || !id || id.trim() === "") {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <PageHeader
+          title="Fasilitas Tidak Ditemukan"
+          description="Data fasilitas kesehatan yang dicari tidak ditemukan atau ID tidak valid"
+          backLink="/dashboard/facilities"
+          backLinkText="Kembali ke Daftar Fasilitas"
+        />
+        <div className="mt-6">
+          <Card>
+            <CardContent className="p-6 text-center">
+              <p className="text-gray-600">
+                {!id || id.trim() === ""
+                  ? "ID fasilitas tidak valid atau kosong."
+                  : `Fasilitas kesehatan dengan ID "${id}" tidak ditemukan.`}
+              </p>
+              <Button
+                className="mt-4"
+                onClick={() => navigate("/dashboard/facilities")}
+              >
+                Kembali ke Daftar Fasilitas
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <PageHeader
-        title="Tambah Fasilitas Kesehatan"
-        description="Tambahkan fasilitas kesehatan baru ke sistem"
+        title="Edit Fasilitas Kesehatan"
+        description={`Perbarui data fasilitas kesehatan: ${
+          selectedFacility?.nama || ""
+        }`}
         backLink="/dashboard/facilities"
         backLinkText="Kembali ke Daftar Fasilitas"
       />
@@ -266,10 +355,10 @@ const FacilityFormPage: React.FC = () => {
                     <option value="">Pilih Kecamatan</option>
                     {kecamatanList.map((kecamatan) => (
                       <option
-                        key={kecamatan.kecamatan_id}
-                        value={kecamatan.kecamatan_id}
+                        key={kecamatan.kecamatan_id || kecamatan.id}
+                        value={kecamatan.kecamatan_id || kecamatan.id}
                       >
-                        {kecamatan.kecamatan_nama}
+                        {kecamatan.kecamatan_nama || kecamatan.nama}
                       </option>
                     ))}
                   </select>
@@ -310,7 +399,7 @@ const FacilityFormPage: React.FC = () => {
                     Lokasi <span className="text-red-500">*</span>
                   </label>
                   <p className="text-sm text-gray-500 mb-2">
-                    Klik pada peta untuk menentukan lokasi
+                    Klik pada peta untuk mengubah lokasi
                   </p>
 
                   <div className="h-80 rounded-lg border border-gray-300 overflow-hidden">
@@ -412,7 +501,7 @@ const FacilityFormPage: React.FC = () => {
                     leftIcon={<Save size={16} />}
                     isLoading={isLoading}
                   >
-                    Simpan
+                    Perbarui
                   </Button>
                 </div>
               </CardFooter>
@@ -424,18 +513,18 @@ const FacilityFormPage: React.FC = () => {
           <Card>
             <CardContent className="p-6">
               <h3 className="text-lg font-medium text-gray-900 mb-4">
-                Petunjuk Pengisian
+                Petunjuk Edit
               </h3>
 
               <div className="space-y-4 text-sm text-gray-600">
                 <div>
                   <h4 className="font-medium text-gray-900">Nama Fasilitas</h4>
-                  <p>Masukkan nama lengkap fasilitas kesehatan</p>
+                  <p>Perbarui nama lengkap fasilitas kesehatan</p>
                 </div>
 
                 <div>
                   <h4 className="font-medium text-gray-900">Tipe Fasilitas</h4>
-                  <p>Pilih tipe fasilitas kesehatan:</p>
+                  <p>Ubah tipe fasilitas kesehatan jika diperlukan:</p>
                   <ul className="list-disc list-inside mt-2 pl-2">
                     <li>Puskesmas: Pusat Kesehatan Masyarakat</li>
                     <li>Pustu: Puskesmas Pembantu</li>
@@ -445,17 +534,17 @@ const FacilityFormPage: React.FC = () => {
 
                 <div>
                   <h4 className="font-medium text-gray-900">Kecamatan</h4>
-                  <p>Pilih kecamatan lokasi fasilitas kesehatan berada</p>
+                  <p>Perbarui kecamatan lokasi fasilitas kesehatan</p>
                 </div>
 
                 <div>
                   <h4 className="font-medium text-gray-900">Kapasitas</h4>
-                  <p>Masukkan kapasitas pelayanan pasien per hari</p>
+                  <p>Perbarui kapasitas pelayanan pasien per hari</p>
                 </div>
 
                 <div>
                   <h4 className="font-medium text-gray-900">Lokasi</h4>
-                  <p>Klik pada peta untuk menentukan koordinat fasilitas</p>
+                  <p>Klik pada peta untuk mengubah koordinat fasilitas</p>
                 </div>
               </div>
             </CardContent>
@@ -466,4 +555,4 @@ const FacilityFormPage: React.FC = () => {
   );
 };
 
-export default FacilityFormPage;
+export default FacilityUpdateFormPage;

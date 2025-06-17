@@ -12,25 +12,32 @@ export const getAllFasilitasBalita = async (): Promise<
 
   console.log("Data fasilitas berhasil diambil:", data);
 
-  const mappedData =
-    data?.map((facility: { fasilitas_id: number; fasilitas_nama: string }) => ({
-      ...facility,
-      id: facility.fasilitas_id,
-      nama: facility.fasilitas_nama,
-    })) || [];
+  return data as PopUpFailitasKesehatan[];
+};
 
-  console.log("Data fasilitas setelah mapping:", mappedData);
-  console.log("Sample mapped facility:", mappedData[0]);
+export const getFasilitasById = async (
+  id: number
+): Promise<FasilitasKesehatan | null> => {
+  const { data, error } = await supabase
+    .from("fasilitas_kesehatan")
+    .select("*")
+    .eq("id", id)
+    .single();
 
-  return mappedData as PopUpFailitasKesehatan[];
+  if (error) {
+    console.error("Gagal mengambil fasilitas by ID:", error.message);
+    return null;
+  }
+
+  return data as FasilitasKesehatan;
 };
 
 export const createFasilitasKesehatan = async (
   fasilitas: Omit<FasilitasKesehatan, "id">
 ): Promise<void> => {
-  const { error } = await supabase.from("fasilitas_kesehatan").insert([
-    fasilitas,
-  ]);
+  const { error } = await supabase
+    .from("fasilitas_kesehatan")
+    .insert([fasilitas]);
 
   if (error) {
     console.error("Gagal menambahkan fasilitas:", error.message);
@@ -38,4 +45,21 @@ export const createFasilitasKesehatan = async (
   }
 
   console.log("Fasilitas berhasil ditambahkan:", fasilitas);
+};
+
+export const updateFasilitasKesehatan = async (
+  id: number,
+  updatedData: Partial<Omit<FasilitasKesehatan, "id">>
+): Promise<void> => {
+  const { error } = await supabase
+    .from("fasilitas_kesehatan")
+    .update(updatedData)
+    .eq("id", id);
+
+  if (error) {
+    console.error("Gagal mengupdate fasilitas:", error.message);
+    throw error;
+  }
+
+  console.log("Fasilitas berhasil diupdate:", { id, ...updatedData });
 };

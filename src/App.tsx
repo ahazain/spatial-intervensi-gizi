@@ -107,14 +107,14 @@ function App() {
               </ProtectedRoute>
             }
           />
-          {/* <Route
+          <Route
             path="facilities/edit/:id"
             element={
               <ProtectedRoute>
                 <FacilityFormPage />
               </ProtectedRoute>
             }
-          /> */}
+          />
           {/* <Route path="map-analysis" element={<MapAnalysisPage />} />
           <Route path="statistics" element={<StatisticsPage />} /> */}
         </Route>
