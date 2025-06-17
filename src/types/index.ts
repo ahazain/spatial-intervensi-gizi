@@ -39,7 +39,7 @@ export interface GeoPoint {
 export interface FasilitasKesehatan {
   id: string;
   nama: string;
-  type: "puskesmas" | "pustu"; //union
+  type: "puskesmas" | "pustu" | "rumah sakit"; //union
   Kecamatan_id: string;
   lokasi: GeoPoint;
   capacity: number;
