@@ -23,8 +23,8 @@ export interface Kecamatan {
   area: GeoPolygon;
 }
 export interface GeoPolygon {
-  type: "Polygon";
-  coordinates: number[][][];
+  type: "Polygon" | "MultiPolygon";
+  coordinates: number[][][] | number[][][][]; // Polygon: 3D, MultiPolygon: 4D
 }
 export interface Balita {
   id: string;
@@ -39,7 +39,7 @@ export interface GeoPoint {
 export interface FasilitasKesehatan {
   id: string;
   nama: string;
-  type: "puskesmas" | "pustu" | "rumah sakit"; //union
+  type: "puskesmas" | "rumah sakit"; //union
   kecamatan_id: string;
   lokasi: GeoPoint;
   capacity: number;
@@ -50,7 +50,7 @@ export interface MapFilters {
   showAreaRentan: boolean;
   showAreaTerkelola: boolean;
   showPuskesmas: boolean;
-  showPustu: boolean;
+  showRumahSakit: boolean;
 }
 
 //struktur data untuk view

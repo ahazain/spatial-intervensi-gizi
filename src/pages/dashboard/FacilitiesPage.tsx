@@ -31,15 +31,14 @@ const FacilitiesPage: React.FC = () => {
       accessor: (facility: PopUpFailitasKesehatan) =>
         facility.type === "puskesmas"
           ? "Puskesmas"
-          : facility.type === "pustu"
-          ? "Pustu"
+          : facility.type === "rumah sakit"
+          ? "Rumah Sakit"
           : "Rumah Sakit",
       className: "w-32",
     },
     {
       header: "Kecamatan",
       accessor: (facility: PopUpFailitasKesehatan) => {
-        console.log("facility kecamatan:", facility.kecamatan?.nama);
         return facility.kecamatan_nama;
       },
     },

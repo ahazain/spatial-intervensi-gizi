@@ -21,7 +21,7 @@ import PublicMapPage from "./pages/public/PublicMapPage";
 import PublicStatsPage from "./pages/public/PublicStatsPage";
 
 // Protected Pages
-// import DashboardPage from "./pages/dashboard/DashboardPage";
+import DashboardPage from "./pages/dashboard/DashboardPage";
 import ChildrenPage from "./pages/dashboard/ChildrenPage";
 import ChildFormPage from "./pages/dashboard/ChildFormPage";
 import FacilitiesPage from "./pages/dashboard/FacilitiesPage";
@@ -80,7 +80,7 @@ function App() {
             </ProtectedRoute>
           }
         >
-          {/* <Route index element={<DashboardPage />} /> */}
+          <Route index element={<DashboardPage />} />
           <Route path="children" element={<ChildrenPage />} />
           <Route
             path="children/add"
