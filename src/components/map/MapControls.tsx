@@ -15,7 +15,7 @@ export interface MapFilters {
   showAreaRentan: boolean;
   showAreaTerkelola: boolean;
   showPuskesmas: boolean;
-  showPustu: boolean;
+  showRumahSakit: boolean;
 }
 
 const defaultFilters: MapFilters = {
@@ -24,7 +24,7 @@ const defaultFilters: MapFilters = {
   showAreaRentan: true,
   showAreaTerkelola: true,
   showPuskesmas: true,
-  showPustu: true,
+  showRumahSakit: true,
 };
 
 const MapControls: React.FC<MapControlsProps> = ({
@@ -187,12 +187,12 @@ const MapControls: React.FC<MapControlsProps> = ({
                 <input
                   type="checkbox"
                   className="h-4 w-4 text-teal-600 border-gray-300 rounded"
-                  checked={filters.showPustu}
+                  checked={filters.showRumahSakit}
                   onChange={(e) =>
-                    handleFilterChange("showPustu", e.target.checked)
+                    handleFilterChange("showRumahSakit", e.target.checked)
                   }
                 />
-                <span className="ml-2 text-xs text-gray-700">Pustu</span>
+                <span className="ml-2 text-xs text-gray-700">Rumah Sakit</span>
               </label>
             </div>
           </div>

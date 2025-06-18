@@ -21,7 +21,7 @@ const FacilityUpdateFormPage: React.FC = () => {
 
   const [formData, setFormData] = useState<{
     nama: string;
-    type: "puskesmas" | "pustu" | "rumah sakit";
+    type: "puskesmas" | "rumah sakit";
     kecamatan_id: string;
     capacity: number;
     coordinates: [number, number];
@@ -331,7 +331,7 @@ const FacilityUpdateFormPage: React.FC = () => {
                     onChange={handleInputChange}
                   >
                     <option value="puskesmas">Puskesmas</option>
-                    <option value="pustu">Pustu</option>
+
                     <option value="rumah sakit">Rumah Sakit</option>
                   </select>
                 </div>
@@ -527,7 +527,7 @@ const FacilityUpdateFormPage: React.FC = () => {
                   <p>Ubah tipe fasilitas kesehatan jika diperlukan:</p>
                   <ul className="list-disc list-inside mt-2 pl-2">
                     <li>Puskesmas: Pusat Kesehatan Masyarakat</li>
-                    <li>Pustu: Puskesmas Pembantu</li>
+
                     <li>Rumah Sakit: Fasilitas kesehatan tingkat lanjut</li>
                   </ul>
                 </div>

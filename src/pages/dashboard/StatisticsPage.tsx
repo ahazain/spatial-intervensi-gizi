@@ -137,7 +137,7 @@ const PublicStatsPage: React.FC = () => {
       // Get facilities in this kecamatan - use 'id' since kecamatan_id doesn't exist
       const kecamatanFacilities = facilities.filter(
         (facility: PopUpFailitasKesehatan) =>
-          facility.id === kecamatan.kecamatan_id
+          facility.kecamatan_id  === kecamatan.kecamatan_id
       );
 
       // Get children in facilities of this kecamatan

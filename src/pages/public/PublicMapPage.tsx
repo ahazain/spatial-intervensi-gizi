@@ -33,7 +33,7 @@ const PublicMapPage: React.FC = () => {
     showAreaRentan: true,
     showAreaTerkelola: true,
     showPuskesmas: true,
-    showPustu: true,
+    showRumahSakit: true,
     showPenyakitMenular: false,
   });
 
@@ -85,7 +85,7 @@ const PublicMapPage: React.FC = () => {
         const facility = facilities.find(
           (f) => f.fasilitas_id === balita.fasilitas_kesehatan_id
         );
-        if (!facility || facility.id !== filters.kecamatanList) {
+        if (!facility || facility.fasilitas_id !== filters.kecamatanList) {
           return false;
         }
       }
@@ -103,12 +103,12 @@ const PublicMapPage: React.FC = () => {
       if (filters.kecamatanList !== "all") {
         // Check both possible ID fields
         const matchesKecamatan =
-          facility.id === filters.kecamatanList ||
-          facility.id === filters.kecamatanList;
+          facility.kecamatan_id === filters.kecamatanList ||
+          facility.kecamatan_id === filters.kecamatanList;
 
         console.log(`Facility ${facility.fasilitas_nama}: kecamatan check`, {
-          facilityId: facility.id,
-          facilityKecamatanId: facility.id || "undefined",
+          facilityId: facility.fasilitas_id,
+          facilityKecamatanId: facility.kecamatan_id || "undefined",
           filterKecamatan: filters.kecamatanList,
           matches: matchesKecamatan,
         });
@@ -123,8 +123,8 @@ const PublicMapPage: React.FC = () => {
         console.log(`Hiding puskesmas: ${facility.fasilitas_nama}`);
         return false;
       }
-      if (facility.type === "pustu" && !filters.showPustu) {
-        console.log(`Hiding pustu: ${facility.fasilitas_nama}`);
+      if (facility.type === "rumah sakit" && !filters.showRumahSakit) {
+        console.log(`Hiding rumah sakit: ${facility.fasilitas_nama}`);
         return false;
       }
 
@@ -196,7 +196,7 @@ const PublicMapPage: React.FC = () => {
       showAreaRentan: true,
       showAreaTerkelola: true,
       showPuskesmas: true,
-      showPustu: true,
+      showRumahSakit: true,
       showPenyakitMenular: false,
     };
 
@@ -334,7 +334,7 @@ const PublicMapPage: React.FC = () => {
           Peta ini menampilkan sebaran kasus gizi anak di Kota Surabaya
           berdasarkan kategori status gizi: normal, gizi kurang, gizi buruk, dan
           stunting. Peta juga menampilkan lokasi fasilitas kesehatan berupa
-          puskesmas dan pustu yang dapat diakses oleh masyarakat.
+          puskesmas dan rumah sakit yang dapat diakses oleh masyarakat.
         </p>
         <p className="mt-2 text-sm text-gray-500">
           Anda dapat memfilter tampilan peta berdasarkan kecamatan, kategori
@@ -500,12 +500,12 @@ const PublicMapPage: React.FC = () => {
             </div>
             <div
               className={`p-2 rounded ${
-                filters.showPustu
+                filters.showRumahSakit
                   ? "bg-teal-100 text-teal-800"
                   : "bg-gray-200 text-gray-600"
               }`}
             >
-              Pustu: {filters.showPustu ? "Aktif" : "Nonaktif"}
+              Rumah Sakit: {filters.showRumahSakit ? "Aktif" : "Nonaktif"}
             </div>
             <div
               className={`p-2 rounded ${
