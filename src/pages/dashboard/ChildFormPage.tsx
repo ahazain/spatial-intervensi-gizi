@@ -7,14 +7,34 @@ import { Button } from "../../components/ui/Button";
 import PageHeader from "../../components/ui/PageHeader";
 import { Save } from "lucide-react";
 
+// Define proper types
+interface ChildData {
+  id: string;
+  nama: string;
+  status_nutrisi: "normal" | "buruk" | "kurang" | "stunting";
+  fasilitas_kesehatan_id: string;
+}
+
 interface FormChildrenProps {
-  existingData?: {
-    id: string;
-    nama: string;
-    status_nutrisi: "normal" | "buruk" | "kurang" | "stunting";
-    fasilitas_kesehatan_id: string;
-  };
+  existingData?: ChildData;
   onSuccess?: () => void;
+}
+
+interface FormData {
+  nama: string;
+  status_nutrisi: "normal" | "buruk" | "kurang" | "stunting";
+  fasilitas_kesehatan_id: string;
+}
+
+interface FormErrors {
+  nama?: string;
+  status_nutrisi?: string;
+  fasilitas_kesehatan_id?: string;
+}
+
+interface Message {
+  type: "success" | "error";
+  text: string;
 }
 
 const ChildFormPage: React.FC<FormChildrenProps> = ({
@@ -31,25 +51,18 @@ const ChildFormPage: React.FC<FormChildrenProps> = ({
     params.id || propsExistingData || location.state?.existingData
   );
 
-  const [existingData, setExistingData] = useState(null);
-  const [formData, setFormData] = useState({
+  // Use proper typing for existingData
+  const [existingData, setExistingData] = useState<ChildData | null>(null);
+  const [formData, setFormData] = useState<FormData>({
     nama: "",
-    status_nutrisi: "normal" as const,
+    status_nutrisi: "normal",
     fasilitas_kesehatan_id: "",
   });
 
-  const [errors, setErrors] = useState<{
-    nama?: string;
-    status_nutrisi?: string;
-    fasilitas_kesehatan_id?: string;
-  }>({});
-
+  const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
   const [isDataLoading, setIsDataLoading] = useState(false);
-  const [message, setMessage] = useState<{
-    type: "success" | "error";
-    text: string;
-  } | null>(null);
+  const [message, setMessage] = useState<Message | null>(null);
 
   // Load facilities data
   useEffect(() => {
@@ -70,19 +83,27 @@ const ChildFormPage: React.FC<FormChildrenProps> = ({
       setIsDataLoading(true);
 
       try {
-        let dataToSet = null;
+        let dataToSet: ChildData | null = null;
 
         if (propsExistingData) {
           dataToSet = propsExistingData;
         } else if (location.state?.existingData) {
-          dataToSet = location.state.existingData;
+          dataToSet = location.state.existingData as ChildData;
         } else if (params.id) {
           const childFromStore = children.find((c) => c.id === params.id);
           if (childFromStore) {
             dataToSet = childFromStore;
           } else {
-            const childFromAPI = await getChildById(params.id);
-            dataToSet = childFromAPI;
+            try {
+              const childFromAPI = await getChildById(params.id);
+              dataToSet = childFromAPI;
+            } catch (error) {
+              console.error("Error fetching child from API:", error);
+              setMessage({
+                type: "error",
+                text: "Data balita tidak ditemukan",
+              });
+            }
           }
         }
 
@@ -114,11 +135,7 @@ const ChildFormPage: React.FC<FormChildrenProps> = ({
 
   // Populate form with existing data
   useEffect(() => {
-    if (
-      existingData &&
-      typeof existingData === "object" &&
-      !existingData.then
-    ) {
+    if (existingData) {
       setFormData({
         nama: existingData.nama || "",
         status_nutrisi: existingData.status_nutrisi || "normal",
@@ -127,8 +144,8 @@ const ChildFormPage: React.FC<FormChildrenProps> = ({
     }
   }, [existingData]);
 
-  const validate = () => {
-    const newErrors: { [key: string]: string } = {};
+  const validate = (): boolean => {
+    const newErrors: FormErrors = {};
 
     if (!formData.nama.trim()) {
       newErrors.nama = "Nama balita wajib diisi";
@@ -140,7 +157,8 @@ const ChildFormPage: React.FC<FormChildrenProps> = ({
 
     if (formData.fasilitas_kesehatan_id) {
       const facilityExists = facilities.find(
-        (f) => String(f.id) === String(formData.fasilitas_kesehatan_id)
+        (f) =>
+          String(f.fasilitas_id) === String(formData.fasilitas_kesehatan_id)
       );
 
       if (!facilityExists) {
@@ -153,7 +171,7 @@ const ChildFormPage: React.FC<FormChildrenProps> = ({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!validate()) {
@@ -208,7 +226,7 @@ const ChildFormPage: React.FC<FormChildrenProps> = ({
       [name]: value,
     }));
 
-    if (errors[name as keyof typeof errors]) {
+    if (errors[name as keyof FormErrors]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
   };
@@ -343,11 +361,17 @@ const ChildFormPage: React.FC<FormChildrenProps> = ({
                         <option value="">Pilih Fasilitas Kesehatan</option>
                         {facilities
                           .filter(
-                            (faskes) => faskes.id && faskes.nama && faskes.type
+                            (faskes) =>
+                              faskes.fasilitas_id &&
+                              faskes.fasilitas_nama &&
+                              faskes.type
                           )
                           .map((faskes) => (
-                            <option key={faskes.id} value={String(faskes.id)}>
-                              {faskes.nama} ({faskes.type})
+                            <option
+                              key={faskes.fasilitas_id}
+                              value={String(faskes.fasilitas_id)}
+                            >
+                              {faskes.fasilitas_nama} ({faskes.type})
                             </option>
                           ))}
                       </>

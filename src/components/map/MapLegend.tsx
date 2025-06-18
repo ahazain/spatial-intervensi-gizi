@@ -88,7 +88,7 @@ const MapLegend: React.FC<MapLegendProps> = ({
             </div>
             <div className="flex items-center text-xs">
               <div className="w-3 h-3 rounded-full bg-cyan-500 mr-2"></div>
-              <span>Pustu</span>
+              <span>Rumah Sakit</span>
             </div>
           </div>
         </div>
